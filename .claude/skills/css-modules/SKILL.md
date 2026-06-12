@@ -1,0 +1,52 @@
+---
+name: css-modules
+description: CSS Modules and styling conventions — design tokens, naming, variants, responsive design, layout, dark mode/theming, motion. Use when styling or visually adjusting components, or editing any *.module.css, tokens, or global styles.
+---
+
+# CSS Modules
+
+## Files & naming
+
+- One module per component, colocated: `UserCard.tsx` + `UserCard.module.css`.
+- Class names: camelCase (`primaryButton`, not `primary-button`) — enables `styles.primaryButton` without bracket access.
+- Name by role, not appearance: `.errorMessage` not `.redText`. The module scope already namespaces — no BEM prefixes needed.
+- Import as `styles`: `import styles from './UserCard.module.css'`.
+
+## Design tokens — single source of truth
+
+- All colors, spacing, radii, shadows, typography, z-index live as CSS custom properties in `src/styles/tokens.css`, defined on `:root`.
+- Component modules consume tokens only: `color: var(--color-text-muted)`. A raw hex/px value for a themable property in a component module is a bug.
+- Spacing on a scale (`--space-1` … `--space-8`); z-index from a fixed ladder (`--z-dropdown`, `--z-modal`, `--z-toast`) — never `z-index: 9999`.
+- Theming (dark mode) by redefining tokens under `[data-theme='dark']` / `prefers-color-scheme` — components never branch on theme themselves.
+
+## Variants & state
+
+- Variants via data attributes, not class string concatenation:
+
+```tsx
+<button className={styles.button} data-variant={variant} data-size={size}>
+```
+
+```css
+.button[data-variant='danger'] { background: var(--color-danger); }
+```
+
+- Boolean UI state the same way (`data-open`, `aria-expanded`) — style off ARIA attributes when one exists: `.menu[aria-expanded='true']`.
+- `clsx` has exactly one job here: merging a consumer-passed `className` prop with the base class. Enumerated variants and boolean state always go through data attributes, never conditional class lists; a component wanting 3+ conditional classes should be restructured into variants.
+
+## Layout & responsive
+
+- Mobile-first: base styles, then `@media (min-width: …)` upward. Breakpoints documented once in `tokens.css` comments (custom properties don't work in media queries — keep the canonical list there).
+- Prefer modern layout primitives: flex `gap` / grid over margin hacks; `aspect-ratio`; container queries for components that adapt to their container, media queries only for page-level layout.
+- Logical properties (`margin-inline`, `padding-block`, `inset-inline-start`) over physical ones — free RTL support.
+- No fixed heights on text containers; min-height if needed.
+
+## Globals — the only allowed global CSS
+
+`src/styles/` contains exactly: `tokens.css`, `reset.css`, `globals.css` (base element styles: body, headings, links). Nothing else is global. No `:global()` in component modules except to target third-party library DOM you don't control — with a comment saying which library.
+
+## Motion
+
+- Animate `transform` and `opacity` only (compositor-friendly); never animate `width/height/top/left` for transitions.
+- Every significant animation (anything beyond a subtle hover/focus transition) respects `@media (prefers-reduced-motion: reduce)` — same threshold as the `a11y` skill.
+- Durations/easings as tokens (`--duration-fast`, `--ease-out`).
