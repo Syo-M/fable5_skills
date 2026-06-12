@@ -41,6 +41,7 @@ E2E tests cover critical user journeys end-to-end (signup, checkout, the money p
 - `webServer` block to build+serve the app — tests own their server lifecycle, locally and in CI.
 - CI: `retries: 2`, `trace: 'on-first-retry'`, `forbidOnly: true`, sharding for speed. Local: 0 retries so flake is loud.
 - A retried-pass is a flake report, not a success — fix the cause (usually a missing web-first assertion before an action).
+- `toHaveScreenshot` assertions follow the `visual-regression` skill (own project, fixture data, determinism rules) — they don't belong in functional E2E specs.
 - Cover the browsers users use (chromium minimum; add webkit/firefox per project requirements) — but don't 3x the matrix for stubbed-network tests.
 
 ## A11y gate

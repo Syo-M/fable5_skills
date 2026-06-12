@@ -8,7 +8,7 @@ Frontend project. Detailed conventions live in `.claude/skills/` and load on dem
 - Framework — decide from `package.json` dependencies with this precedence: `next` present → `nextjs` skill; `astro` present → `astro` skill (even though React/Vite also appear there); neither → standalone Vite + React SPA → `vite-react` skill.
 - Package manager: detect from the lockfile (`package-lock.json` / `pnpm-lock.yaml` / `bun.lock`) and use only that one — never hardcode `npm` commands in a pnpm/bun repo.
 - Styling: **CSS Modules** (`*.module.css`). No inline styles, no CSS-in-JS, no utility-class frameworks. Sole exception: Astro single-file scoped `<style>` per the `astro` skill.
-- Tests by layer: pure logic → **Vitest** unit tests; component behavior → **Storybook play functions** (run as tests via the Storybook Vitest addon); user journeys → **Playwright** E2E. Do not write a plain Vitest component test for behavior a story should own.
+- Tests by layer: pure logic → **Vitest** unit tests; component behavior → **Storybook play functions** (run as tests via the Storybook Vitest addon); user journeys → **Playwright** E2E. Do not write a plain Vitest component test for behavior a story should own. Visual appearance → VRT over stories (`visual-regression`); never screenshot what a DOM assertion can check.
 
 ## Non-negotiables
 
@@ -40,9 +40,14 @@ Use the scripts defined in `package.json` (`dev`, `build`, `typecheck`, `lint`, 
 | Standalone Vite SPA setup / config | `vite-react` |
 | Astro pages, islands, content collections | `astro` |
 | Styles, design tokens, responsive | `css-modules` |
+| Shared UI components, tokens/typography/icons, Figma implementation | `design-system` |
+| Animations, transitions, motion | `motion` |
+| Images, fonts, video, LCP/CLS optimization | `images-media` |
+| Charts, dashboards, data tables | `data-viz` |
 | Unit tests, test utilities | `testing-vitest` |
 | Stories, play functions, component tests | `storybook` |
 | E2E tests | `testing-playwright` |
+| Visual regression / screenshot tests | `visual-regression` |
 | Anything touching auth, user input, HTML injection, outbound fetch, webhooks, env vars, deps | `frontend-security` |
 | Accessibility | `a11y` |
 | CI gates, dependency policy, licenses, releases, repo config | `governance` |

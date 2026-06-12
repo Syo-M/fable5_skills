@@ -15,9 +15,9 @@ description: CSS Modules and styling conventions — design tokens, naming, vari
 ## Design tokens — single source of truth
 
 - All colors, spacing, radii, shadows, typography, z-index live as CSS custom properties in `src/styles/tokens.css`, defined on `:root`.
-- Component modules consume tokens only: `color: var(--color-text-muted)`. A raw hex/px value for a themable property in a component module is a bug.
+- Component modules consume tokens only — the semantic/component tier where tiers exist (see `design-system`), never primitives like `--blue-600`. A raw hex/px value for a themable property in a component module is a bug.
 - Spacing on a scale (`--space-1` … `--space-8`); z-index from a fixed ladder (`--z-dropdown`, `--z-modal`, `--z-toast`) — never `z-index: 9999`.
-- Theming (dark mode) by redefining tokens under `[data-theme='dark']` / `prefers-color-scheme` — components never branch on theme themselves.
+- Theming (dark mode) by redefining tokens — components never branch on theme themselves. Default to `prefers-color-scheme`; add `[data-theme]` only when a user-facing toggle is required, set pre-paint by a tiny inline script (CSP nonce applies — see `frontend-security`) to avoid a wrong-theme flash.
 
 ## Variants & state
 
@@ -50,3 +50,4 @@ description: CSS Modules and styling conventions — design tokens, naming, vari
 - Animate `transform` and `opacity` only (compositor-friendly); never animate `width/height/top/left` for transitions.
 - Every significant animation (anything beyond a subtle hover/focus transition) respects `@media (prefers-reduced-motion: reduce)` — same threshold as the `a11y` skill.
 - Durations/easings as tokens (`--duration-fast`, `--ease-out`).
+- These are the invariants only — escalation (keyframes / WAAPI / animation libraries), View Transitions, entrance/exit animations, and scroll effects live in the `motion` skill.

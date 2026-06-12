@@ -28,7 +28,7 @@ type Story = StoryObj<typeof meta>;
 
 ## Which stories to write
 
-- One story per meaningful state: default, empty, loading, error, edge content (long text, many items). Each renders without interaction → these are your visual states.
+- One story per meaningful state: default, empty, loading, error, edge content (long text, many items). Each renders without interaction → these are your visual states, and the VRT snapshot surface (see `visual-regression`).
 - Plus interaction stories with `play` for each key behavior: submit success, validation error, keyboard operation.
 - Vary stories via `args`, not copy-pasted render functions. Custom `render` only when composition is needed.
 
@@ -64,6 +64,7 @@ export const ShowsValidationError: Story = {
 
 - The Vitest addon turns every story into a test (render check) and runs `play` functions in a real browser (Playwright provider) — keep `npm run test` covering them in CI.
 - A story that can't pass headlessly (depends on viewport quirks, real network) is broken — fix the story, don't exclude it.
+- Plays that follow an animation (modal close, exit transitions) assert post-animation state with auto-retrying queries (`findBy*`, retried `expect`) — do NOT disable animations or emulate reduced motion in interaction tests; that executes a different motion code path than users get. Animations-off belongs to VRT only (see `visual-regression`).
 - Reuse stories in plain Vitest tests with `composeStories` when you need extra assertions beyond the play function.
 
 ## A11y

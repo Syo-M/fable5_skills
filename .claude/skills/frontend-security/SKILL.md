@@ -82,6 +82,6 @@ Set and keep (next.config / astro config / hosting headers):
 ## Uploads & user files
 
 - Validate type by content (magic bytes), not extension; cap size; store outside the web root / in object storage.
-- SVG passes image checks but executes scripts: deny or sanitize SVG. Serve user uploads from a separate origin; `Content-Disposition: attachment` for non-image types; correct `Content-Type` + `nosniff`.
-- Authorize every download per-request — non-guessable names are defense-in-depth, never the access control.
+- SVG passes image checks but executes scripts: deny or sanitize SVG. Serve user uploads from a separate origin — re-encoding raster images through the framework's image optimizer satisfies this intent; anything served as-is (HTML, SVG, PDF, downloads) must use the separate origin. `Content-Disposition: attachment` for non-image types; correct `Content-Type` + `nosniff`.
+- Authorize every download per-request — non-guessable names are defense-in-depth, never the access control. Intentionally-public assets (e.g. avatars) may skip per-request auth as an explicit, documented decision — not a default.
 - Never trust client-supplied paths/filenames: path traversal, zip-slip when extracting archives.

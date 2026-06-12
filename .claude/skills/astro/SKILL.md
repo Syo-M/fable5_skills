@@ -8,7 +8,7 @@ description: Astro conventions — islands architecture, client directives, cont
 ## Zero-JS by default
 
 - Default to `.astro` components rendering static HTML. Ship JS only for genuinely interactive islands.
-- Choose the cheapest `client:` directive that works: `client:visible` (below the fold) > `client:idle` (non-critical) > `client:load` (immediately needed). `client:only` is a last resort (no SSR, layout shift risk).
+- Choose the cheapest `client:` directive that works: `client:visible` (below the fold) > `client:idle` (non-critical) > `client:load` (immediately needed). `client:only` is a last resort (no SSR, layout shift risk) — except for components that cannot render on the server, e.g. DOM-measuring charts (see `data-viz`).
 - Before reaching for a React island, ask: can this be a `<details>`, CSS, or a few lines of vanilla JS in a `<script>` tag? Many "interactive" widgets need no framework.
 - Share state between islands with nano stores, not prop drilling through the static layer.
 

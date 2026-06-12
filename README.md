@@ -30,6 +30,7 @@ Claude Code 用の設定ファイル群です。**トークン効率・セキュ
    - 純ロジック → Vitest 単体テスト
    - コンポーネント挙動 → **Storybook play 関数が主役**(Vitest addon でテストとして実行)
    - ユーザージャーニー → Playwright E2E(クリティカルパスのみ)
+   - 見た目(レイアウト/テーマ崩れ) → VRT(Storybook ストーリーをスナップショット面として利用)
 
 ## 構成
 
@@ -41,6 +42,11 @@ CLAUDE.md                          # 常駐コア(スタック判定規則・絶
   vite-react/SKILL.md              # 素のVite SPA限定(Astro/Next.jsでは発動しない)
   astro/SKILL.md                   # Islands・client:directive・Content Layer API
   css-modules/SKILL.md             # デザイントークン・data-attribute variant・responsive
+  design-system/SKILL.md           # トークン階層・タイポグラフィ・アイコン・Figma実装
+  motion/SKILL.md                  # アニメーション段階選択・View Transitions・reduced-motion
+  images-media/SKILL.md            # レスポンシブ画像・フォント・動画・CLS/LCP最適化
+  data-viz/SKILL.md                # チャート・ダッシュボード・大規模データ・チャートa11y
+  visual-regression/SKILL.md       # VRT・スクリーンショット決定性・ベースラインレビュー
   testing-vitest/SKILL.md          # Testing Library・モック方針(MSW)・flake対策
   storybook/SKILL.md               # CSF3・play関数・Vitest addon・コンポーネントテストの正
   testing-playwright/SKILL.md      # locator・web-firstアサーション・storageState安全運用
