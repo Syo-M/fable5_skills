@@ -1,0 +1,71 @@
+# Starter merge-blocking CI — mirrors the gate order in the `governance` skill.
+# Copy to .github/workflows/ci.yml in the consuming project, then adapt the package
+# manager, Node version, and any project-specific steps. Every job here must pass for a PR to merge.
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4 # pin to a commit SHA in production per `governance`
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          # cache: npm  # set to your package manager (npm/pnpm/yarn)
+      # Frozen, script-free install (use your repo's package manager)
+      - run: npm ci --ignore-scripts
+
+      # 1. Typecheck + lint (ESLint + Stylelint)
+      - run: npm run typecheck
+      - run: npm run lint
+
+      # 2. Unit + story tests (Vitest incl. Storybook Vitest addon); a11y serious/critical fail
+      - run: npm run test
+
+      # 3. E2E on critical paths + axe scan (Playwright)
+      - run: npx playwright install --with-deps
+      - run: npm run test:e2e
+
+      # 4. Dependency audit — high + critical block
+      - run: npm audit --audit-level=high
+
+      # 7. Bundle-size budget (size-limit / Lighthouse CI)
+      - run: npm run size  # define a size-limit script + budget
+
+  secrets-scan:
+    # 5. Secrets scan — any finding blocks (also run in pre-commit)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+
+  license-scan:
+    # 6. License check — denied license blocks (policy in `governance`)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - run: npm ci --ignore-scripts
+      - run: npx license-checker --production --onlyAllow "MIT;Apache-2.0;BSD-2-Clause;BSD-3-Clause;ISC;0BSD"
+
+  # 8. Honor-system controls lint cannot catch (zod-at-boundary, IDOR, webhook signatures).
+  # Wire a security-review gate / semgrep ruleset here — see templates/README.md.
+  # security-review:
+  #   runs-on: ubuntu-latest
+  #   steps: [ ... semgrep or org security-review action ... ]

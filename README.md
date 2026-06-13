@@ -54,7 +54,14 @@ CLAUDE.md                          # 常駐コア(スタック判定規則・絶
   a11y/SKILL.md                    # セマンティクス・キーボード・フォーカス管理・WCAG 2.2 AA
   governance/SKILL.md              # CIゲート・ライセンスポリシー・secrets scanning・変更管理
   tooling/SKILL.md                 # ルール→ESLint/Stylelint/tsconfig 強制マップ
+CODEOWNERS                         # CLAUDE.md/.claude/** をセキュリティ/基盤チームレビュー必須に
+SECURITY.md                        # 脆弱性報告・変更管理・インシデント対応・セキュリティ床
+CHANGELOG.md                       # バージョン履歴(タグ参照のための単一情報源)
+templates/                         # 導入先がコピーする雛形(CIゲート・gitleaks・ESLint・Stylelint)
 ```
+
+各スキルの `description` には英語の `Use when…` に加えて**日本語の依頼例**を併記しており、
+日本語プロンプト(例:「グラフ追加して」「画像が重い」「Figma通りに実装して」)でも確実に発動します。
 
 ## 使い方
 
@@ -78,8 +85,11 @@ cp -r .claude/skills /path/to/your-project/.claude/
 
 1. このリポジトリを **git 管理 + タグ付きリリース**にする(CHANGELOG をつける)
 2. 各プロジェクトは git submodule / npm パッケージ / 社内テンプレートとして**特定バージョンを参照**する
-3. `CLAUDE.md` と `.claude/**` に **CODEOWNERS** を設定し、変更にはプラットフォーム/セキュリティチームの
-   レビューを必須にする(これらのファイルは全AIエージェントの挙動を変える特権プロンプトです)
+   (`CHANGELOG.md` がタグの単一情報源)
+3. 同梱の **`CODEOWNERS`** のプレースホルダ(`@your-org/...`)を実チーム名に置換し、ブランチ保護で
+   CODEOWNERS レビューを必須にする(`CLAUDE.md` と `.claude/**` は全AIエージェントの挙動を変える特権プロンプト)
+4. `templates/` の雛形(CIゲート・gitleaks・ESLint・Stylelint)を導入先にコピーし、規約を「記述」から
+   「実行される強制」に落とす。脆弱性報告とインシデント対応は `SECURITY.md` 参照
 
 詳細は `governance` スキル参照。
 

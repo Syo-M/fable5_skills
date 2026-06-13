@@ -1,6 +1,6 @@
 ---
 name: testing-playwright
-description: Playwright E2E conventions — locators, web-first assertions, isolation, network stubbing, flake prevention. Use when writing or fixing E2E tests or playwright.config.
+description: Playwright E2E conventions — locators, web-first assertions, isolation, network stubbing, flake prevention. Use when writing or fixing E2E tests or playwright.config. 日本語の依頼例:「E2Eテスト書いて」「Playwright」「ブラウザテスト」「ユーザー操作の通しテスト」「テストが不安定/flaky」。
 ---
 
 # Playwright

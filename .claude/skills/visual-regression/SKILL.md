@@ -1,6 +1,6 @@
 ---
 name: visual-regression
-description: Visual regression testing — Storybook-based VRT, Playwright screenshot comparison, determinism/flake control, baseline review workflow. Use when setting up or maintaining visual tests, screenshot diffs, Chromatic, or investigating "the screenshot test broke" failures.
+description: Visual regression testing — Storybook-based VRT, Playwright screenshot comparison, determinism/flake control, baseline review workflow. Use when setting up or maintaining visual tests, screenshot diffs, Chromatic, or investigating "the screenshot test broke" failures. 日本語の依頼例:「スクショテスト導入」「ビジュアルリグレッション」「見た目の差分テスト」「スクリーンショットが毎回変わる」「Chromatic」。
 ---
 
 # Visual Regression Testing

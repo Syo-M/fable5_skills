@@ -1,6 +1,6 @@
 ---
 name: design-system
-description: Design system and visual consistency — token tiers, typography, iconography, shared component API design, implementing Figma designs. Use when building shared/reusable UI components, defining tokens, type scales, or icon sets, or translating Figma/design mockups into code.
+description: Design system and visual consistency — token tiers, typography, iconography, shared component API design, implementing Figma designs. Use when building shared/reusable UI components, defining tokens, type scales, or icon sets, or translating Figma/design mockups into code. 日本語の依頼例:「共通コンポーネント作って」「デザインシステム」「デザイントークン定義」「Figma通りに実装して」「アイコン整備」「タイポグラフィ設計」。
 ---
 
 # Design System

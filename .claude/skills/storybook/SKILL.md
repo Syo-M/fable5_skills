@@ -1,6 +1,6 @@
 ---
 name: storybook
-description: Storybook conventions — CSF3 stories, play functions as Vitest component tests, decorators, a11y. Use when writing or editing *.stories.tsx or Storybook config, AND whenever asked to write tests for a component — stories with play functions are this repo's component-test layer.
+description: Storybook conventions — CSF3 stories, play functions as Vitest component tests, decorators, a11y. Use when writing or editing *.stories.tsx or Storybook config, AND whenever asked to write tests for a component — stories with play functions are this repo's component-test layer. 日本語の依頼例:「Storybook/ストーリー書いて」「コンポーネントのテスト書いて」「play関数」「interaction test」。
 ---
 
 # Storybook

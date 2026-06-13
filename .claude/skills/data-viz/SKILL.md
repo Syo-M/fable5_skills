@@ -1,13 +1,13 @@
 ---
 name: data-viz
-description: Charts and data visualization — library choice, chart accessibility, SSR/hydration concerns, dashboard performance, large datasets and data tables. Use when building or fixing charts, graphs, dashboards, KPI displays, or large data tables.
+description: Charts and data visualization — library choice, chart accessibility, SSR/hydration concerns, dashboard performance, large datasets and data tables. Use when building or fixing charts, graphs, dashboards, KPI displays, or large data tables. 日本語の依頼例:「グラフ/チャートを追加して」「ダッシュボード作って」「データテーブル」「可視化して」「KPI表示」。
 ---
 
 # Data Visualization
 
 ## Library policy
 
-- One charting library per repo. Default to a React-native composable one (e.g. Recharts for standard charts, visx when you need lower-level control); full D3 only for genuinely bespoke visualizations — and then only D3's math modules (scale/shape), with React owning the DOM. For plots that stay dense after aggregation, use a canvas renderer (e.g. uPlot or Chart.js) — the same one-library and ask-first rules apply.
+- One charting library per repo. If the repo already has one installed, use it — do not add a second. Otherwise the default is **Recharts** for standard charts (bar/line/area/pie/scatter); escalate to **visx** only when a design needs lower-level control Recharts can't express, and to D3's math modules (scale/shape, React owning the DOM) only for genuinely bespoke visualizations. For plots that stay dense after aggregation, use **uPlot** (canvas). Each escalation is a deliberate, ask-first dependency choice, not a default.
 - Charting libraries are heavy: the CLAUDE.md dependency ask-first rule applies, and the chart bundle should be code-split with the dashboard route, not in the shared bundle.
 
 ## Rendering & SSR

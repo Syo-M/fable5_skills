@@ -1,6 +1,6 @@
 ---
 name: css-modules
-description: CSS Modules and styling conventions — design tokens, naming, variants, responsive design, layout, dark mode/theming, motion. Use when styling or visually adjusting components, or editing any *.module.css, tokens, or global styles.
+description: CSS Modules and styling conventions — design tokens, naming, variants, responsive design, layout, dark mode/theming, motion. Use when styling or visually adjusting components, or editing any *.module.css, tokens, or global styles. 日本語の依頼例:「スタイルを当てて」「見た目を整えて」「デザイン調整」「ダークモード」「レスポンシブ対応」「CSS書いて」。
 ---
 
 # CSS Modules

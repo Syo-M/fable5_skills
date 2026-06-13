@@ -1,6 +1,6 @@
 ---
 name: a11y
-description: Accessibility conventions — semantic HTML, keyboard support, focus management, ARIA, testing. Use when building UI components, forms, dialogs, navigation, or fixing a11y violations.
+description: Accessibility conventions — semantic HTML, keyboard support, focus management, ARIA, testing. Use when building UI components, forms, dialogs, navigation, or fixing a11y violations. 日本語の依頼例:「アクセシビリティ対応して」「キーボード操作できるように」「フォーカス管理」「スクリーンリーダー対応」「コントラスト」。
 ---
 
 # Accessibility

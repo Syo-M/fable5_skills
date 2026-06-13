@@ -1,6 +1,6 @@
 ---
 name: images-media
-description: Images, icons, fonts, and video — responsive images, modern formats, lazy loading, CLS/LCP optimization, SVG handling, font loading. Use when adding or optimizing images, fonts, video, favicons, or fixing layout-shift / slow-LCP issues.
+description: Images, icons, fonts, and video — responsive images, modern formats, lazy loading, CLS/LCP optimization, SVG handling, font loading. Use when adding or optimizing images, fonts, video, favicons, or fixing layout-shift / slow-LCP issues. 日本語の依頼例:「画像が重い/遅い」「画像を最適化して」「フォント読み込み」「動画埋め込み」「LCP改善」「レイアウトがガタつく」「ファビコン」。
 ---
 
 # Images & Media

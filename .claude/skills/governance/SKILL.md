@@ -1,6 +1,6 @@
 ---
 name: governance
-description: Repository governance — CI merge gates, toolchain pinning, dependency lifecycle and license policy, secrets scanning, change control for rules and sensitive paths, Git/PR conventions, observability, performance budgets, browser support. Use when setting up CI/CD, repo configuration, releases, adding dependencies, or defining team policy.
+description: Repository governance — CI merge gates, toolchain pinning, dependency lifecycle and license policy, secrets scanning, change control for rules and sensitive paths, Git/PR conventions, observability, performance budgets, browser support. Use when setting up CI/CD, repo configuration, releases, adding dependencies, or defining team policy. 日本語の依頼例:「CI/CD設定」「リリース手順」「依存ライセンス確認」「秘密情報スキャン」「リポジトリ設定」「ブランチ/PR運用」「パフォーマンスバジェット」。
 ---
 
 # Governance
@@ -15,7 +15,7 @@ description: Repository governance — CI merge gates, toolchain pinning, depend
 6. License check — denied license blocks (policy below).
 7. Bundle-size budget check (`size-limit` or Lighthouse CI).
 
-A change is mergeable only when all gates pass; gates may not be skipped or marked optional to "unblock" a PR without human sign-off.
+A change is mergeable only when all gates pass; gates may not be skipped or marked optional to "unblock" a PR without human sign-off. Starter configs implementing these gates (CI workflow, gitleaks, ESLint, Stylelint) live in `templates/` — copy and adapt them rather than authoring from scratch.
 
 ## Toolchain pinning
 
@@ -24,7 +24,7 @@ A change is mergeable only when all gates pass; gates may not be skipped or mark
 
 ## Dependency lifecycle
 
-- Updates via Renovate/Dependabot: grouped, with a minimum release age (cooldown) so freshly-published compromised versions don't auto-merge.
+- Updates via Renovate/Dependabot: grouped, with a minimum release age of 3 days (cooldown) so freshly-published compromised versions don't auto-merge. Break-glass: a fix for a known exploited/critical CVE may bypass the cooldown with a named approver's sign-off recorded on the PR.
 - Emit an SBOM (CycloneDX) in CI for release builds.
 - Pin GitHub Actions (and other CI plugins) by commit SHA.
 - Add-time vetting rules live in `frontend-security` (install scripts, typosquatting, registry pinning).
@@ -42,7 +42,8 @@ A change is mergeable only when all gates pass; gates may not be skipped or mark
 
 ## Change control — the rules themselves
 
-- `CLAUDE.md` and `.claude/**` are privileged instructions: a careless edit silently changes every AI agent's behavior. Protect them with CODEOWNERS requiring platform/security-team review.
+- `CLAUDE.md` and `.claude/**` are privileged instructions: a careless edit silently changes every AI agent's behavior. Protect them with CODEOWNERS (this repo ships a `CODEOWNERS`) requiring platform/security-team review, and require CODEOWNERS review in branch protection.
+- Disclosure and incident response are defined in `SECURITY.md`; every release is recorded in `CHANGELOG.md`.
 - This rules repo is versioned (git + CHANGELOG); projects consume a tagged version, not ad-hoc copies, so audits can tell which rules governed which commits.
 - Security and a11y rules are EXEMPT from "prune rules that are being followed" maintenance — a control that is working is not redundant.
 

@@ -1,0 +1,20 @@
+# Code ownership for this rules repository.
+# CLAUDE.md and everything under .claude/** are PRIVILEGED INSTRUCTIONS: a single
+# edit silently changes the behavior of every AI agent that consumes these rules.
+# Per the `governance` skill, changes here require platform/security-team review.
+#
+# Replace the placeholder handles below with your real GitHub team/usernames
+# before relying on this file (branch protection must also require CODEOWNERS review).
+
+# Default owner for everything in the repo
+*                       @your-org/platform-team
+
+# The privileged rule surface — require security review in addition
+/CLAUDE.md              @your-org/platform-team @your-org/security
+/.claude/              @your-org/platform-team @your-org/security
+/.claude/skills/frontend-security/  @your-org/security
+/.claude/skills/governance/         @your-org/security
+
+# Supply-chain / enforcement surface
+/templates/             @your-org/platform-team
+/SECURITY.md            @your-org/security

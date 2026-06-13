@@ -1,6 +1,6 @@
 ---
 name: testing-vitest
-description: Vitest unit and component testing conventions — Testing Library, mocking policy, MSW, timers. Use when writing or fixing unit/component tests or vitest config.
+description: Vitest unit and component testing conventions — Testing Library, mocking policy, MSW, timers. Use when writing or fixing unit/component tests or vitest config. 日本語の依頼例:「ユニットテスト書いて」「Vitest」「テスト追加して」「モック」「ロジックのテスト」。
 ---
 
 # Vitest
@@ -8,7 +8,7 @@ description: Vitest unit and component testing conventions — Testing Library, 
 ## What to test, where
 
 - Pure logic (utils, reducers, schema transforms) → plain unit tests. Fast, no DOM.
-- Component behavior → Storybook play functions are the primary component-test layer (see `storybook` skill); write direct Testing Library tests only for headless hooks/providers with no visual states, or for prop-matrix edge cases too numerous to be stories.
+- Component behavior → Storybook play functions are the primary component-test layer (see `storybook` skill); write direct Testing Library tests only for headless hooks/providers with no visual states, or when exhaustively covering a pure prop/branch matrix (roughly ≥ 6 combinations) where one story per case would bloat the catalog — the meaningful visual states still get stories.
 - Full user flows → Playwright (see `testing-playwright`). Don't simulate routing/auth flows in jsdom.
 - Test behavior users observe, not implementation: no asserting on state internals, no `container.querySelector('.styles_button_x')`, no spying on internal functions of the unit under test.
 

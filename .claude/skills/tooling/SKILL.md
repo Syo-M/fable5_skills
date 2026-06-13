@@ -1,6 +1,6 @@
 ---
 name: tooling
-description: Lint and enforcement configuration — ESLint, Stylelint, tsconfig flags, env validation, dead-code checks; maps project rules to the tools that enforce them. Use when configuring linters, tsconfig, or when a convention should be automated instead of remembered.
+description: Lint and enforcement configuration — ESLint, Stylelint, tsconfig flags, env validation, dead-code checks; maps project rules to the tools that enforce them. Use when configuring linters, tsconfig, or when a convention should be automated instead of remembered. 日本語の依頼例:「ESLint/Lint設定」「tsconfig設定」「ルールを自動で強制したい」「Stylelint」「CIで弾きたい」。
 ---
 
 # Tooling — enforce rules with machines, not memory

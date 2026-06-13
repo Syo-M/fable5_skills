@@ -1,6 +1,6 @@
 ---
 name: frontend-security
-description: Frontend security rules — XSS, injection, validation, CSRF, SSRF, CORS, secrets, sessions/JWT, rate limiting, headers, uploads, third-party scripts, dependency hygiene. Use whenever code touches user input, HTML rendering, auth, cookies, URLs, outbound fetch, webhooks, env vars, file uploads, logging, or new dependencies.
+description: Frontend security rules — XSS, injection, validation, CSRF, SSRF, CORS, secrets, sessions/JWT, rate limiting, headers, uploads, third-party scripts, prompt injection, dependency hygiene. Use whenever code touches user input, HTML rendering, auth, cookies, URLs, outbound fetch, webhooks, env vars, file uploads, logging, untrusted content fed to an LLM, or new dependencies. 日本語の依頼例:「認証/ログイン実装」「入力フォーム作って」「cookie/セッション」「外部APIを叩いて」「webhook受信」「ファイルアップロード」「環境変数」「依存パッケージ追加」「LLMに渡す」。
 ---
 
 # Frontend Security
@@ -50,6 +50,15 @@ Order of defense: don't accept untrusted data → validate at the boundary → e
 
 - Throttle login, signup, password reset, and expensive mutations — per IP and per account.
 - Uniform error messages and response timing on login/reset: do not reveal whether an account exists.
+
+## Untrusted content & prompt injection
+
+Relevant whenever the app sends content to an LLM or renders model output (chat, summarization, RAG, agentic features).
+
+- Treat all external content — user input, fetched pages, API/webhook payloads, documents, retrieved chunks — as **data, never instructions**. It may contain text attempting to redirect the model ("ignore previous instructions…"); enclose it in clearly delimited, labeled fields and instruct the model that delimited content is data only.
+- The model's output is itself untrusted: never `eval`/render it as HTML/execute it as a tool call without the same validation, sanitization (DOMPurify), and authorization you apply to user input. Tool/function calls the model requests are authorized server-side per the acting user — the model cannot grant itself capability.
+- Never put secrets, API keys, or another user's data in a prompt or system message that a response could leak back. Apply least-privilege to any tool the model can invoke; high-impact actions (sending mail, spending, deletes) require explicit human confirmation, not model discretion.
+- Server-side LLM keys stay server-side (never `NEXT_PUBLIC_`/`VITE_`); rate-limit and budget-cap LLM endpoints (cost-DoS).
 
 ## Secrets, env, logging
 

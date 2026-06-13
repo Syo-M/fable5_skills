@@ -1,6 +1,6 @@
 ---
 name: nextjs
-description: Next.js App Router conventions — Server/Client Components, data fetching, caching, Server Actions, route handlers, metadata, env vars. Use for any work inside a Next.js app.
+description: Next.js App Router conventions — Server/Client Components, data fetching, caching, Server Actions, route handlers, metadata, env vars. Use for any work inside a Next.js app. 日本語の依頼例:「Next.jsで〜」「Server Action」「ルートハンドラ」「RSC/サーバーコンポーネント」「キャッシュ」。
 ---
 
 # Next.js (App Router)

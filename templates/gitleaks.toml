@@ -1,0 +1,16 @@
+# Starter gitleaks config — copy to .gitleaks.toml. Run in pre-commit AND CI
+# (see templates/github/workflows/ci.yml) and enable push protection on the host.
+# Extends the default ruleset; add project-specific allowlists narrowly and with justification.
+title = "gitleaks config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Global allowlist — keep narrow; never blanket-allow real secret patterns."
+paths = [
+  '''(^|/)\.env\.example$''',
+  '''(^|/)README\.md$''',
+  '''(^|/)CHANGELOG\.md$''',
+]
+# regexes = []   # add specific known-safe test fixtures only, with a comment per entry

@@ -1,6 +1,6 @@
 ---
 name: astro
-description: Astro conventions — islands architecture, client directives, content collections, .astro components. Use when working in an Astro project.
+description: Astro conventions — islands architecture, client directives, content collections, .astro components. Use when working in an Astro project. 日本語の依頼例:「Astroで〜」「アイランド」「コンテンツコレクション」「.astroコンポーネント」。
 ---
 
 # Astro

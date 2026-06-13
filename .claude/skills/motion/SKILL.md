@@ -1,6 +1,6 @@
 ---
 name: motion
-description: Animation and motion conventions — CSS transitions/keyframes, View Transitions, scroll-driven effects, animation libraries, exit animations, performance. Use when adding, changing, or debugging any animation, transition, or page-transition effect.
+description: Animation and motion conventions — CSS transitions/keyframes, View Transitions, scroll-driven effects, animation libraries, exit animations, performance. Use when adding, changing, or debugging any animation, transition, or page-transition effect. 日本語の依頼例:「アニメーション付けて」「動きを付けて」「トランジション」「ページ遷移アニメ」「スクロール演出」「ふわっと表示」。
 ---
 
 # Motion
