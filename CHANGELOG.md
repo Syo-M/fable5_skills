@@ -16,6 +16,22 @@ consuming projects can pin a tag and audits can tell which rules governed which 
   insecure randomness for secrets, webhook body used before signature verify, and fetch-from-
   request-input (SSRF). Makes the honor-system controls machine-checkable, not just reviewed.
 
+## [1.4.0] - 2026-06-14
+
+### Added
+- Security depth (the reviewers' remaining "optional" gaps): SSRF DNS-rebinding/TOCTOU
+  guidance + IPv6 deny ranges, a data-minimization/retention rule, and an authorization-model
+  rule (RBAC vs ownership, deny-by-default, one policy helper) in `frontend-security`; CORS-no-
+  credential-reflection and rate-limit-auth/LLM-endpoints added to the always-resident CLAUDE.md
+  floor; a default initial-load bundle budget (~170 kB gzipped/route) in `governance`.
+
+### Changed
+- This repo's own `CODEOWNERS` now uses the real maintainer handle (`@Syo-M`) instead of
+  `@your-org` placeholders, so the change-control control is operative (branch protection must
+  still be enabled in repo settings).
+- `SECURITY.md` now routes disclosure through GitHub private vulnerability reporting rather than
+  a placeholder email.
+
 ## [1.3.1] - 2026-06-14
 
 ### Fixed

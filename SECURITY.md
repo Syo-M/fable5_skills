@@ -14,8 +14,10 @@ and the `governance` skill.
 ## Reporting a vulnerability
 
 Report suspected vulnerabilities — in these rules, or a class of insecure code the rules
-fail to prevent — privately to **security@your-org.example** (replace with your channel).
-Do not open a public issue for an unfixed vulnerability.
+fail to prevent — privately via GitHub's **"Report a vulnerability"** (repository → Security
+tab → Advisories), which keeps the report private until a fix ships. Do not open a public
+issue for an unfixed vulnerability. (Organizations adopting these rules: substitute your own
+security intake channel here.)
 
 - Acknowledgement target: 2 business days.
 - Triage & severity (CVSS-style) target: 5 business days.

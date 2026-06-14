@@ -24,6 +24,7 @@ Order of defense: don't accept untrusted data → validate at the boundary → e
 - ReDoS: never execute user-controlled regex; cap input length before any regex; avoid nested quantifiers (`(a+)+`).
 - Prototype pollution: never recursively merge user JSON into existing objects; reject `__proto__` / `constructor` / `prototype` keys; prefer `Map` or `Object.create(null)` for user-keyed lookups.
 - IDs from the client are claims, not facts: after auth, check the resource belongs to / is permitted for this user (IDOR). Per-resource, in every action/handler — middleware route guards are not enough.
+- Authorization model: decide it deliberately (role-based for coarse access, attribute/ownership-based for per-record) and enforce it server-side in one place (a policy helper), not ad-hoc `if (user.role === 'admin')` scattered across handlers. Deny by default.
 
 ## Sessions, cookies, JWT
 
@@ -40,7 +41,8 @@ Order of defense: don't accept untrusted data → validate at the boundary → e
 
 ## Outbound requests — SSRF & webhooks
 
-- Server code fetching a user-supplied or user-influenced URL: allow-list hosts; block private/link-local ranges and cloud metadata endpoints (`169.254.169.254`); re-validate after redirects. Constrain `next/image` `remotePatterns` tightly — the image optimizer is a classic SSRF proxy.
+- Server code fetching a user-supplied or user-influenced URL: allow-list hosts; block private/link-local ranges and cloud metadata endpoints (`169.254.169.254`) — and the IPv6 equivalents (`::1`, `fc00::/7`, `fe80::/10`, IPv4-mapped `::ffff:169.254.169.254`); re-validate after redirects. Constrain `next/image` `remotePatterns` tightly — the image optimizer is a classic SSRF proxy.
+- Defeat DNS rebinding / TOCTOU: resolve the host, validate the resolved IP against the deny ranges, then connect to that pinned IP (don't validate a hostname and then let the HTTP client re-resolve it).
 - Incoming webhooks: **verify the provider's HMAC signature (constant-time compare) before trusting the payload; reject when the signature header is missing.** Schema validation is not authentication.
 
 ## CORS
@@ -66,6 +68,7 @@ Relevant whenever the app sends content to an LLM or renders model output (chat,
 - Secrets never appear in: client bundles (`NEXT_PUBLIC_`/`VITE_`/`PUBLIC_` vars are public by definition), repo files, logs, client-bound error messages, or URL query strings (query strings leak via logs and referrers).
 - `.env*` in `.gitignore`; commit `.env.example` with placeholders. A secret ever committed = rotate it; deleting the file does not unpublish it. Secrets scanning in CI is mandatory (see `governance`).
 - No PII, credentials, or tokens in server logs, analytics events, or error-tracker payloads — configure scrubbing (e.g. Sentry `beforeSend`). Server errors: log details server-side, return a generic message + correlation ID. Stack traces and DB errors never cross the wire.
+- Data minimization & retention: collect only what's needed; set a retention window on logs/analytics containing personal data and honor deletion requests — don't keep PII indefinitely "just in case".
 
 ## Headers & platform policy
 

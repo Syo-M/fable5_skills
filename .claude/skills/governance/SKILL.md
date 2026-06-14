@@ -65,7 +65,7 @@ AI agents must not modify without explicit human approval: CI workflow files, au
 ## Performance budgets
 
 - Core Web Vitals targets: LCP ≤ 2.5 s, INP ≤ 200 ms, CLS ≤ 0.1 (p75, field data).
-- Client JS budget per route enforced in CI (`size-limit`); adding a dependency that breaks the budget requires the `frontend-security`/governance dependency review, not a budget bump.
+- Client JS budget per route enforced in CI (`size-limit`); a sensible default initial-load ceiling is ~170 kB gzipped JS per route (tune per product/device profile). Adding a dependency that breaks the budget requires the `frontend-security`/governance dependency review, not a budget bump.
 
 ## Browser support
 
