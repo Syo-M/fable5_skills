@@ -14,7 +14,7 @@ description: Repository governance — CI merge gates, toolchain pinning, depend
 5. Secrets scan (gitleaks or equivalent) — any finding blocks.
 6. License check — denied license blocks (policy below).
 7. Bundle-size budget check (`size-limit` or Lighthouse CI).
-8. Security-review (Semgrep heuristics for the honor-system controls lint can't catch — zod-at-boundary, IDOR, webhook signatures; starter ruleset in `templates/.semgrep/`).
+8. Security-review (Semgrep heuristics in `templates/.semgrep/` for webhook-missing-verification, SSRF, secret exposure, and unsanitized HTML; zod-at-boundary and IDOR have no reliable static rule and stay review-only).
 
 A change is mergeable only when all gates pass; gates may not be skipped or marked optional to "unblock" a PR without human sign-off. Starter configs implementing these gates (CI workflow, gitleaks, ESLint, Stylelint) live in `templates/` — copy and adapt them rather than authoring from scratch.
 

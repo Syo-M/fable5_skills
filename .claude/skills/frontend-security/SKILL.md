@@ -106,7 +106,8 @@ These are the controls lint can't fully prove (only Semgrep-backstopped in `temp
 - External input (body / params / cookies / API response / webhook) parsed with a zod schema at the boundary?
 - Webhook payload signature verified (constant-time) BEFORE it's trusted?
 - Every client-supplied ID authorized for *this* user, per resource (IDOR)?
-- Outbound fetch to a user-influenced URL: host allow-listed + private/link-local/metadata ranges blocked?
+- Authorization enforced server-side in the one policy helper, deny-by-default — not scattered role checks?
+- Outbound fetch to a user-influenced URL: host allow-listed, private/link-local/metadata ranges blocked, AND connected to the pinned resolved IP (DNS-rebinding)?
 - No secret / PII / token in the client bundle, logs, analytics, error payloads, or URLs?
 - Non-static HTML sanitized (DOMPurify)? No new `dangerouslySetInnerHTML` / `set:html` / `innerHTML` without it?
 - Session cookies `HttpOnly` + `Secure` + `SameSite`; cookie-auth state-changing route handlers CSRF-protected?

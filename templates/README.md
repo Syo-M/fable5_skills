@@ -13,7 +13,8 @@ Copy and adapt:
 | `gitleaks.toml` | `.gitleaks.toml` | Secrets-scan config (run in pre-commit + CI) |
 | `eslint.config.js` | `eslint.config.js` | Flat-config starter mapping the `tooling` skill rules |
 | `stylelint.config.mjs` | `stylelint.config.mjs` | Token-enforcement starter for CSS Modules |
-| `.semgrep/frontend-security.yml` | `.semgrep/frontend-security.yml` | Heuristic detectors for honor-system controls (zod-at-boundary, IDOR, webhook HMAC, SSRF) |
+| `.semgrep/frontend-security.yml` | `.semgrep/frontend-security.yml` | Heuristic detectors (webhook-missing-verify, SSRF, secret exposure, unsanitized HTML) |
+| `size-limit.json` | `size-limit.json` | Bundle-budget config (~170 kB/route); add a `size` script and wire into CI |
 
 After copying, replace placeholder org/team handles, pin tool versions, and verify each gate
 actually runs against your stack. The configs encode policy from the skills — when a skill

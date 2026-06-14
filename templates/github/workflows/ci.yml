@@ -41,8 +41,9 @@ jobs:
       # 4. Dependency audit — high + critical block
       - run: npm audit --audit-level=high
 
-      # 7. Bundle-size budget (size-limit / Lighthouse CI)
-      - run: npm run size  # define a size-limit script + budget
+      # 7. Bundle-size budget (size-limit) — copy templates/size-limit.json to the repo root,
+      # add "size": "size-limit" to package.json scripts, and tune the limit/path to your build.
+      - run: npm run size
 
   secrets-scan:
     # 5. Secrets scan — any finding blocks (also run in pre-commit)

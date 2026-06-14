@@ -48,4 +48,4 @@ Every mechanical rule in this rule-set should be backed by a tool so `lint`/CI c
 
 ## Honor-system rules — cannot be tool-enforced, review for these explicitly
 
-zod at every boundary, per-resource authorization (IDOR), webhook signature verification, mock-at-the-boundary policy, "measure before optimizing", small focused diffs, manual keyboard walks (a11y). Lint cannot catch these; the first three get a heuristic Semgrep backstop in `templates/.semgrep/` (flags for review, not proof), but all of them still require human/AI code review.
+zod at every boundary, per-resource authorization (IDOR), webhook signature verification, mock-at-the-boundary policy, "measure before optimizing", small focused diffs, manual keyboard walks (a11y). Lint cannot catch these. The shipped `templates/.semgrep/` heuristics backstop webhook-missing-verification, SSRF, secret exposure, and unsanitized HTML (flags for review, not proof); zod-at-boundary and IDOR have no reliable static rule and stay review-only. All of them still require human/AI code review.

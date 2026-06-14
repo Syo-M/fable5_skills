@@ -1,20 +1,24 @@
 # Changelog
 
 All notable changes to this rules repository are documented here.
-Format follows [Keep a Changelog](https://keepachangelog.com/); this repo is versioned so
-consuming projects can pin a tag and audits can tell which rules governed which commits.
+Format follows [Keep a Changelog](https://keepachangelog.com/) in reverse-chronological order; this
+repo is versioned so consuming projects can pin a tag and audits can tell which rules governed which commits.
 
-## [1.3.0] - 2026-06-14
+## [1.5.1] - 2026-06-15
+
+### Fixed
+- Reordered this CHANGELOG to strict reverse-chronological order (it had drifted to 1.3.0 → 1.5.0 →
+  1.4.0 …), restoring the tag-to-rules audit trail the file promises.
+- Doc-vs-enforcement drift: `governance` (CI gate 8) and `tooling` overstated the Semgrep backstop.
+  Corrected to match the shipped `templates/.semgrep/` ruleset — webhook-missing-verification, SSRF,
+  secret exposure, and unsanitized HTML are backstopped; zod-at-boundary and IDOR have no reliable
+  static rule and are explicitly review-only.
+- `frontend-security` self-check: added an authorization-model gate and folded the DNS-rebinding
+  pinned-IP step into the SSRF gate, so an all-green checklist can't pass a rebind-vulnerable fetch.
 
 ### Added
-- New `i18n` skill: message catalogs, ICU plurals/interpolation, `Intl` formatting, locale
-  routing, RTL, and locale-aware input validation — the last major frontend domain the set
-  was missing. Cross-referenced from `css-modules` (logical properties), `data-viz` (`Intl`),
-  and `frontend-security` (parse-then-validate). Added to the CLAUDE.md skill index (now 18 skills).
-- `templates/.semgrep/frontend-security.yml`: real Semgrep heuristics backing the
-  `security-review` CI gate — public-env secret exposure, unsanitized `dangerouslySetInnerHTML`,
-  insecure randomness for secrets, webhook body used before signature verify, and fetch-from-
-  request-input (SSRF). Makes the honor-system controls machine-checkable, not just reviewed.
+- `templates/size-limit.json`: a concrete ~170 kB/route bundle budget config so the `governance`
+  budget number is enforceable, not just documented; `ci.yml` size step points at it.
 
 ## [1.5.0] - 2026-06-15
 
@@ -56,6 +60,18 @@ consuming projects can pin a tag and audits can tell which rules governed which 
   (Semgrep can't model call order); widened the DOMPurify allowlist to wrapped/`isomorphic` sanitizers.
 - `i18n`: the missing-key CI check now names a concrete tool and is framed as a wired gate, not an
   unenforced claim; added the reciprocal i18n cross-reference in `frontend-security` (parse-then-validate).
+
+## [1.3.0] - 2026-06-14
+
+### Added
+- New `i18n` skill: message catalogs, ICU plurals/interpolation, `Intl` formatting, locale
+  routing, RTL, and locale-aware input validation — the last major frontend domain the set
+  was missing. Cross-referenced from `css-modules` (logical properties), `data-viz` (`Intl`),
+  and `frontend-security` (parse-then-validate). Added to the CLAUDE.md skill index (now 18 skills).
+- `templates/.semgrep/frontend-security.yml`: real Semgrep heuristics backing the
+  `security-review` CI gate — public-env secret exposure, unsanitized `dangerouslySetInnerHTML`,
+  insecure randomness for secrets, webhook body used before signature verify, and fetch-from-
+  request-input (SSRF). Makes the honor-system controls machine-checkable, not just reviewed.
 
 ## [1.2.1] - 2026-06-14
 
