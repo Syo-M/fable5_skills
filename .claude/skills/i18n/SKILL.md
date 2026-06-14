@@ -9,7 +9,7 @@ description: Internationalization and localization — message catalogs, ICU plu
 
 - Every user-visible string comes from a message catalog keyed by ID — never a literal in JSX. This is the one rule that, if skipped, makes everything else impossible to retrofit.
 - Use the framework-idiomatic library: `next-intl` (Next.js App Router), `react-i18next` / `react-intl` (Vite SPA), Astro's i18n routing + a catalog. One per repo (dependency ask-first rule applies).
-- Keys are semantic and namespaced (`checkout.payment.submit`), not the English text. Keep catalogs flat-ish and lint for missing/orphaned keys in CI.
+- Keys are semantic and namespaced (`checkout.payment.submit`), not the English text. Keep catalogs shallow (≤3 levels) and run a missing/orphaned-key check in CI (`i18next-parser --fail-on-update`, or the library's extractor) — wire it as a gate, don't rely on memory.
 - Translator-facing context: provide a description for ambiguous keys; never concatenate sentence fragments across keys (word order differs per language).
 
 ## Plurals, gender, interpolation — ICU MessageFormat
@@ -45,4 +45,4 @@ description: Internationalization and localization — message catalogs, ICU plu
 ## Testing
 
 - Pseudo-localization (accented + padded strings) in a story/build catches truncation, clipping, and hardcoded strings early (pairs with `visual-regression` over both LTR and one RTL locale).
-- Stories cover at least one non-English and one RTL locale for layout-sensitive components (see `storybook`); a missing-key check runs in CI.
+- Stories cover at least one non-English and one RTL locale for layout-sensitive components (see `storybook`).

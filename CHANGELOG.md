@@ -16,6 +16,18 @@ consuming projects can pin a tag and audits can tell which rules governed which 
   insecure randomness for secrets, webhook body used before signature verify, and fetch-from-
   request-input (SSRF). Makes the honor-system controls machine-checkable, not just reviewed.
 
+## [1.3.1] - 2026-06-14
+
+### Fixed
+- Reconciled the now-real security-review gate across docs: added it as gate 8 in the `governance`
+  CI list, and updated `tooling` so zod-at-boundary / IDOR / webhook-signature are described as
+  "Semgrep-backstopped heuristic + review" rather than purely un-enforceable.
+- `templates/.semgrep`: corrected the action org name (`returntocorp` → `semgrep`); renamed the
+  webhook rule to `webhook-handler-missing-signature-verify` to match what it can actually detect
+  (Semgrep can't model call order); widened the DOMPurify allowlist to wrapped/`isomorphic` sanitizers.
+- `i18n`: the missing-key CI check now names a concrete tool and is framed as a wired gate, not an
+  unenforced claim; added the reciprocal i18n cross-reference in `frontend-security` (parse-then-validate).
+
 ## [1.2.1] - 2026-06-14
 
 ### Fixed

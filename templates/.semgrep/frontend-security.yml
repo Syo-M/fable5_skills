@@ -24,8 +24,9 @@ rules:
     patterns:
       - pattern: dangerouslySetInnerHTML={{ __html: $X }}
       - pattern-not: dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(...) }}
+      - pattern-not: dangerouslySetInnerHTML={{ __html: $S.sanitize(...) }}
+      - pattern-not: dangerouslySetInnerHTML={{ __html: sanitize(...) }}
       - pattern-not: dangerouslySetInnerHTML={{ __html: "..." }}
-      - pattern-not: dangerouslySetInnerHTML={{ __html: `...` }}
 
   # Insecure randomness used for something that looks security-relevant.
   - id: insecure-random-for-secret
@@ -43,24 +44,25 @@ rules:
           metavariable: $F
           regex: (?i).*(token|secret|nonce|otp|session|key|password|salt|id).*
 
-  # Webhook route that reads the body before any signature verification (HMAC).
-  # Heuristic: a POST handler in a file named like a webhook that awaits req text/json
-  # without a verify/constructEvent call. Tune the verify identifier to your provider.
-  - id: webhook-body-used-before-signature-verify
+  # Webhook handler that reads the body but contains NO signature-verification call at all.
+  # NOTE: Semgrep cannot model call ORDER here (pattern-not-inside excludes a verify call
+  # anywhere in scope, before or after), so this catches the "verification entirely missing"
+  # case — not "verified but after the read." The latter needs taint mode / human review.
+  - id: webhook-handler-missing-signature-verify
     languages: [typescript, javascript]
     severity: WARNING
     paths:
       include: ["**/webhook*/**", "**/*webhook*"]
     message: >-
-      Webhook payloads must have their provider signature verified (constant-time HMAC)
-      BEFORE the body is trusted/parsed. Schema validation is not authentication.
-      See frontend-security: Outbound requests — SSRF & webhooks.
+      This webhook handler reads the body but has no signature-verification call. Verify the
+      provider's HMAC (constant-time) BEFORE trusting the payload; schema validation is not
+      authentication. See frontend-security: Outbound requests — SSRF & webhooks.
     patterns:
       - pattern-either:
           - pattern: await $REQ.json()
           - pattern: await $REQ.text()
       - pattern-not-inside: |
-          ... $VERIFY(...); ...
+          ... $VERIFY(...) ...
       - metavariable-regex:
           metavariable: $VERIFY
           regex: (?i).*(verify|constructEvent|validateSignature|verifyHmac).*

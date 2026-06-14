@@ -20,6 +20,7 @@ Order of defense: don't accept untrusted data → validate at the boundary → e
 - Client-side validation is UX only; the server must reject independently.
 - Default to closed shapes: `z.strictObject({...})` (zod 4; `.strict()` is the legacy spelling) — unknown keys are **rejected**, blocking mass-assignment (`isAdmin: true` in a profile update). Plain `z.object()` silently strips unknown keys, which also prevents mass-assignment but hides client bugs. Document any exception.
 - Bound every user-supplied string with `.max(n)` — unbounded input is a DoS/ReDoS vector.
+- Locale-formatted input (decimal comma, native digits): parse to a canonical form first, then validate the canonical value (see `i18n`).
 - ReDoS: never execute user-controlled regex; cap input length before any regex; avoid nested quantifiers (`(a+)+`).
 - Prototype pollution: never recursively merge user JSON into existing objects; reject `__proto__` / `constructor` / `prototype` keys; prefer `Map` or `Object.create(null)` for user-keyed lookups.
 - IDs from the client are claims, not facts: after auth, check the resource belongs to / is permitted for this user (IDOR). Per-resource, in every action/handler — middleware route guards are not enough.
