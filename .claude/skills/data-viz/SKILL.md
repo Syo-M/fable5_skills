@@ -30,6 +30,6 @@ description: Charts and data visualization — library choice, chart accessibili
 
 ## Formatting & states
 
-- All numbers/dates through `Intl.NumberFormat` / `Intl.DateTimeFormat` (locale-aware, handles compact notation) — never hand-built strings.
+- All numbers/dates through `Intl.NumberFormat` / `Intl.DateTimeFormat` (locale-aware, handles compact notation) — never hand-built strings (see `i18n` for locale/currency rules).
 - Timezones are explicit: store/transport UTC, render in a deliberately chosen zone, label it when ambiguous.
 - Every chart designs its empty, loading, and error states — and each is a Storybook story (see `storybook`); "blank white rectangle" is not an empty state.

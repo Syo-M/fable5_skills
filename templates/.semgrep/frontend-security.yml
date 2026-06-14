@@ -1,0 +1,82 @@
+# Starter Semgrep rules for the honor-system controls ESLint cannot catch.
+# Copy to .semgrep/ (referenced by templates/github/workflows/ci.yml). These are
+# HEURISTICS — tune patterns to your validation/auth helpers and treat findings as
+# "prove this is safe", not "this is definitely a bug". Pairs with the frontend-security skill.
+rules:
+  # Secret-like value exposed to the client bundle via a public env prefix.
+  - id: public-env-secret-exposed
+    languages: [typescript, javascript, tsx, jsx]
+    severity: ERROR
+    message: >-
+      A client-exposed env var (NEXT_PUBLIC_/VITE_/PUBLIC_) has a secret-like name.
+      Anything under a public prefix ships to the browser — move secrets server-side.
+      See frontend-security: Secrets, env, logging.
+    patterns:
+      - pattern-regex: (NEXT_PUBLIC_|VITE_|PUBLIC_)[A-Z0-9_]*(SECRET|TOKEN|PASSWORD|PRIVATE|API_KEY|APIKEY)
+
+  # dangerouslySetInnerHTML with a non-literal that isn't run through a sanitizer.
+  - id: unsanitized-dangerously-set-inner-html
+    languages: [tsx, jsx]
+    severity: ERROR
+    message: >-
+      dangerouslySetInnerHTML with dynamic content must be sanitized with DOMPurify
+      at output time. See frontend-security: XSS.
+    patterns:
+      - pattern: dangerouslySetInnerHTML={{ __html: $X }}
+      - pattern-not: dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(...) }}
+      - pattern-not: dangerouslySetInnerHTML={{ __html: "..." }}
+      - pattern-not: dangerouslySetInnerHTML={{ __html: `...` }}
+
+  # Insecure randomness used for something that looks security-relevant.
+  - id: insecure-random-for-secret
+    languages: [typescript, javascript]
+    severity: WARNING
+    message: >-
+      Math.random() is not cryptographically secure. Use crypto.randomUUID() /
+      crypto.getRandomValues() for tokens, nonces, ids, or secrets.
+      See frontend-security: Sessions, cookies, JWT.
+    patterns:
+      - pattern: Math.random()
+      - pattern-inside: |
+          $F(...) { ... }
+      - metavariable-regex:
+          metavariable: $F
+          regex: (?i).*(token|secret|nonce|otp|session|key|password|salt|id).*
+
+  # Webhook route that reads the body before any signature verification (HMAC).
+  # Heuristic: a POST handler in a file named like a webhook that awaits req text/json
+  # without a verify/constructEvent call. Tune the verify identifier to your provider.
+  - id: webhook-body-used-before-signature-verify
+    languages: [typescript, javascript]
+    severity: WARNING
+    paths:
+      include: ["**/webhook*/**", "**/*webhook*"]
+    message: >-
+      Webhook payloads must have their provider signature verified (constant-time HMAC)
+      BEFORE the body is trusted/parsed. Schema validation is not authentication.
+      See frontend-security: Outbound requests — SSRF & webhooks.
+    patterns:
+      - pattern-either:
+          - pattern: await $REQ.json()
+          - pattern: await $REQ.text()
+      - pattern-not-inside: |
+          ... $VERIFY(...); ...
+      - metavariable-regex:
+          metavariable: $VERIFY
+          regex: (?i).*(verify|constructEvent|validateSignature|verifyHmac).*
+
+  # Outbound fetch to a URL built from request input (SSRF surface) — flag for host allow-list review.
+  - id: fetch-url-from-request-input
+    languages: [typescript, javascript]
+    severity: WARNING
+    message: >-
+      fetch() to a user-influenced URL is an SSRF surface. Allow-list hosts, block
+      private/link-local/metadata ranges, and re-validate after redirects.
+      See frontend-security: Outbound requests — SSRF & webhooks.
+    patterns:
+      - pattern-either:
+          - pattern: fetch($REQ.$PROP, ...)
+          - pattern: fetch(`...${$REQ.$PROP}...`, ...)
+      - metavariable-regex:
+          metavariable: $REQ
+          regex: (req|request|searchParams|params|body|input|query)

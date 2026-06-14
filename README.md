@@ -52,6 +52,7 @@ CLAUDE.md                          # 常駐コア(スタック判定規則・絶
   testing-playwright/SKILL.md      # locator・web-firstアサーション・storageState安全運用
   frontend-security/SKILL.md       # XSS・CSRF・SSRF・CORS・webhook署名・JWT・headers・依存衛生
   a11y/SKILL.md                    # セマンティクス・キーボード・フォーカス管理・WCAG 2.2 AA
+  i18n/SKILL.md                    # 多言語・ICU複数形・Intl整形・ロケールルーティング・RTL
   governance/SKILL.md              # CIゲート・ライセンスポリシー・secrets scanning・変更管理
   tooling/SKILL.md                 # ルール→ESLint/Stylelint/tsconfig 強制マップ
 CODEOWNERS                         # CLAUDE.md/.claude/** をセキュリティ/基盤チームレビュー必須に

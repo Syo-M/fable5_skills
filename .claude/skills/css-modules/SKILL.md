@@ -38,7 +38,7 @@ description: CSS Modules and styling conventions — design tokens, naming, vari
 
 - Mobile-first: base styles, then `@media (min-width: …)` upward. Breakpoints documented once in `tokens.css` comments (custom properties don't work in media queries — keep the canonical list there).
 - Prefer modern layout primitives: flex `gap` / grid over margin hacks; `aspect-ratio`; container queries for components that adapt to their container, media queries only for page-level layout.
-- Logical properties (`margin-inline`, `padding-block`, `inset-inline-start`) over physical ones — free RTL support.
+- Logical properties (`margin-inline`, `padding-block`, `inset-inline-start`) over physical ones — free RTL support (the foundation the `i18n` skill builds on).
 - No fixed heights on text containers; min-height if needed.
 
 ## Globals — the only allowed global CSS

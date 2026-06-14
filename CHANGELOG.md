@@ -4,6 +4,18 @@ All notable changes to this rules repository are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/); this repo is versioned so
 consuming projects can pin a tag and audits can tell which rules governed which commits.
 
+## [1.3.0] - 2026-06-14
+
+### Added
+- New `i18n` skill: message catalogs, ICU plurals/interpolation, `Intl` formatting, locale
+  routing, RTL, and locale-aware input validation — the last major frontend domain the set
+  was missing. Cross-referenced from `css-modules` (logical properties), `data-viz` (`Intl`),
+  and `frontend-security` (parse-then-validate). Added to the CLAUDE.md skill index (now 18 skills).
+- `templates/.semgrep/frontend-security.yml`: real Semgrep heuristics backing the
+  `security-review` CI gate — public-env secret exposure, unsanitized `dangerouslySetInnerHTML`,
+  insecure randomness for secrets, webhook body used before signature verify, and fetch-from-
+  request-input (SSRF). Makes the honor-system controls machine-checkable, not just reviewed.
+
 ## [1.2.1] - 2026-06-14
 
 ### Fixed

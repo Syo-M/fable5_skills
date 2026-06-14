@@ -51,5 +51,6 @@ Use the scripts defined in `package.json` (`dev`, `build`, `typecheck`, `lint`, 
 | Visual regression / screenshot tests | `visual-regression` |
 | Anything touching auth, user input, HTML injection, outbound fetch, webhooks, env vars, deps | `frontend-security` |
 | Accessibility | `a11y` |
+| Translations, multi-locale, dates/currency formatting, RTL | `i18n` |
 | CI gates, dependency policy, licenses, releases, repo config | `governance` |
 | ESLint / Stylelint / tsconfig / enforcement setup | `tooling` |
