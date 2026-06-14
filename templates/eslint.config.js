@@ -5,6 +5,7 @@
 import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import importPlugin from 'eslint-plugin-import';
+import react from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
 import jsxA11y from 'eslint-plugin-jsx-a11y';
 
@@ -13,7 +14,9 @@ export default tseslint.config(
   ...tseslint.configs.recommendedTypeChecked,
   {
     languageOptions: { parserOptions: { projectService: true } },
-    plugins: { import: importPlugin, 'react-hooks': reactHooks, 'jsx-a11y': jsxA11y },
+    // react-hooks/no-array-index-key/no-danger/forbid-dom-props all come from eslint-plugin-react(-hooks),
+    // so both plugins must be registered — omitting `react` makes ESLint fail to load ("rule not found").
+    plugins: { import: importPlugin, react, 'react-hooks': reactHooks, 'jsx-a11y': jsxA11y },
     rules: {
       // CLAUDE.md non-negotiables
       '@typescript-eslint/no-explicit-any': 'error',
@@ -26,10 +29,12 @@ export default tseslint.config(
       // Named exports only — exceptions per react-patterns (routes, configs, CSF meta)
       'import/no-default-export': 'error',
 
-      // frontend-security: no eval family
+      // frontend-security / CLAUDE.md: no eval family, no unsanitized HTML, no inline styles
       'no-eval': 'error',
       'no-implied-eval': 'error',
       'no-new-func': 'error',
+      'react/no-danger': 'error',
+      'react/forbid-dom-props': ['error', { forbid: ['style'] }],
 
       // a11y (recommended set as errors)
       ...jsxA11y.configs.recommended.rules,

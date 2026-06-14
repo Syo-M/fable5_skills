@@ -64,8 +64,22 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npx license-checker --production --onlyAllow "MIT;Apache-2.0;BSD-2-Clause;BSD-3-Clause;ISC;0BSD"
 
-  # 8. Honor-system controls lint cannot catch (zod-at-boundary, IDOR, webhook signatures).
-  # Wire a security-review gate / semgrep ruleset here — see templates/README.md.
-  # security-review:
-  #   runs-on: ubuntu-latest
-  #   steps: [ ... semgrep or org security-review action ... ]
+  security-review:
+    # 8. Honor-system controls lint cannot catch (zod-at-boundary, IDOR, webhook signatures).
+    # Semgrep gives them a machine backstop; tune rules to your stack and add org rulesets.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: returntocorp/semgrep-action@v1
+        with:
+          # Start from a curated ruleset, then layer the project rules below.
+          config: >-
+            p/owasp-top-ten
+            p/react
+            p/typescript
+            ./.semgrep/
+      # Place project rules in .semgrep/*.yml, e.g. patterns for:
+      #  - a route handler / Server Action whose args are used before a zod .parse()
+      #  - a webhook handler that reads the body before verifying the HMAC signature
+      #  - a DB query keyed on a request id with no ownership check (IDOR)
+      # Failing findings block the merge like any other gate.

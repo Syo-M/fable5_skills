@@ -32,8 +32,8 @@ description: React component and hooks conventions. Use when creating or editing
 ## Performance
 
 - Measure before optimizing (React DevTools Profiler) — add memoization only after a profile shows a render cost the user can perceive (jank, input lag), never preemptively. A re-render that the profiler shows under a frame budget is not a problem.
-- React Compiler is stable and recommended for production; check whether it's enabled (babel/framework config). With it on, do not hand-write `memo` / `useMemo` / `useCallback` — it handles them.
-- Without the compiler: memoize only proven-hot paths; prefer restructuring (move state down, pass `children`) over memo wrappers.
+- React Compiler is GA as of React 19+; check both the installed React version and whether the compiler is actually enabled (babel/framework config) before relying on it. With it on, do not hand-write `memo` / `useMemo` / `useCallback` — it handles them.
+- Without the compiler: add memoization only to a path the Profiler shows exceeding one frame budget (~16 ms) on a 4–6× throttled CPU; prefer restructuring (move state down, pass `children`) over memo wrappers.
 - `useId` for generated IDs (SSR-safe). Never `Math.random()` in render.
 
 ## Errors & loading

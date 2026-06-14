@@ -4,6 +4,22 @@ All notable changes to this rules repository are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/); this repo is versioned so
 consuming projects can pin a tag and audits can tell which rules governed which commits.
 
+## [1.2.1] - 2026-06-14
+
+### Fixed
+- `templates/eslint.config.js` failed to load: it used `react/no-array-index-key` without registering
+  `eslint-plugin-react`. Registered the plugin and added the two rules the `tooling` table already
+  promised — `react/no-danger` and `react/forbid-dom-props` (no inline `style`) — so the starter
+  enforces the CLAUDE.md non-negotiables it claims to. (Caught by the v1.2.0 re-score.)
+- `templates/github/workflows/ci.yml`: the honor-system `security-review` gate was a commented-out
+  stub; wired it to a real Semgrep job (OWASP/React/TS rulesets + a `.semgrep/` hook for
+  zod-at-boundary / IDOR / webhook-signature patterns).
+
+### Changed
+- `react-patterns`: replaced the surviving "proven-hot paths" hedge with a decidable bar (Profiler
+  shows a path exceeding ~16 ms / one frame on a 4–6× throttled CPU); React Compiler claim now hedged
+  to "check the installed React version and whether it's enabled" rather than asserting GA outright.
+
 ## [1.2.0] - 2026-06-13
 
 ### Added
