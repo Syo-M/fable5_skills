@@ -98,3 +98,16 @@ Set and keep (next.config / astro config / hosting headers):
 - SVG passes image checks but executes scripts: deny or sanitize SVG. Serve user uploads from a separate origin — re-encoding raster images through the framework's image optimizer satisfies this intent; anything served as-is (HTML, SVG, PDF, downloads) must use the separate origin. `Content-Disposition: attachment` for non-image types; correct `Content-Type` + `nosniff`.
 - Authorize every download per-request — non-guessable names are defense-in-depth, never the access control. Intentionally-public assets (e.g. avatars) may skip per-request auth as an explicit, documented decision — not a default.
 - Never trust client-supplied paths/filenames: path traversal, zip-slip when extracting archives.
+
+## Self-check before shipping boundary code
+
+These are the controls lint can't fully prove (only Semgrep-backstopped in `templates/.semgrep/`). Before finishing any change that touches a boundary, answer each for what you touched — a "no" means fix it, don't ship:
+
+- External input (body / params / cookies / API response / webhook) parsed with a zod schema at the boundary?
+- Webhook payload signature verified (constant-time) BEFORE it's trusted?
+- Every client-supplied ID authorized for *this* user, per resource (IDOR)?
+- Outbound fetch to a user-influenced URL: host allow-listed + private/link-local/metadata ranges blocked?
+- No secret / PII / token in the client bundle, logs, analytics, error payloads, or URLs?
+- Non-static HTML sanitized (DOMPurify)? No new `dangerouslySetInnerHTML` / `set:html` / `innerHTML` without it?
+- Session cookies `HttpOnly` + `Secure` + `SameSite`; cookie-auth state-changing route handlers CSRF-protected?
+- Untrusted / model-bound content handled as data, never instructions?

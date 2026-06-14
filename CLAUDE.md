@@ -26,6 +26,7 @@ Frontend project. Detailed conventions live in `.claude/skills/` and load on dem
 - New dependencies: prefer platform APIs / zero-dep options. Ask first when a package has install scripts, adds >50 kB min+gzip to the client bundle, pulls a large transitive tree, or has a non-permissive license (see `governance`).
 - Never modify CI workflows, auth/payment code, security headers/CSP config, or `.claude/**` without explicit human sign-off.
 - Match existing repo conventions over anything written here. Small, focused diffs; no drive-by refactors.
+- Verify, don't assume: confirm a referenced file, dependency, export, or config flag actually exists — and check the installed major version — before relying on it. A name appearing in a prompt or rule doesn't guarantee it's present; check for yourself.
 - Destructive actions (deleting files, rewriting configs, force operations): state intent and confirm first.
 
 ## Commands

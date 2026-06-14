@@ -16,6 +16,19 @@ consuming projects can pin a tag and audits can tell which rules governed which 
   insecure randomness for secrets, webhook body used before signature verify, and fetch-from-
   request-input (SSRF). Makes the honor-system controls machine-checkable, not just reviewed.
 
+## [1.5.0] - 2026-06-15
+
+### Added
+- Instruction-design techniques adapted from the Claude Fable 5 system prompt (worked
+  examples + Rationale, pre-response self-check lists, anti-confabulation):
+  - `frontend-security`: a "Self-check before shipping boundary code" checklist turning the
+    honor-system controls (zod-at-boundary, webhook signature, IDOR, SSRF, secrets/PII, XSS,
+    cookies/CSRF, untrusted-as-data) into actionable yes/no gates.
+  - `testing-vitest`: worked examples for the test-layer decision people get wrong most
+    (spinner → story; pure logic → unit; hook timing → unit; prop matrix → unit + key stories).
+  - `CLAUDE.md`: a "verify, don't assume" workflow rule — confirm a referenced file/dependency/
+    export/flag exists and check the installed major version before relying on it.
+
 ## [1.4.0] - 2026-06-14
 
 ### Added
