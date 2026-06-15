@@ -1,6 +1,6 @@
 ---
 name: css-modules
-description: CSS Modules and styling conventions — design tokens, naming, variants, responsive design, layout, dark mode/theming, motion. Use when styling or visually adjusting components, or editing any *.module.css, tokens, or global styles. 日本語の依頼例:「スタイルを当てて」「見た目を整えて」「デザイン調整」「ダークモード」「レスポンシブ対応」「CSS書いて」。
+description: CSS Modules and styling conventions — design tokens, naming, variants, responsive design, layout, dark mode/theming. Use when styling or visually adjusting components, or editing any *.module.css, tokens, or global styles. For animations/transitions/motion use the `motion` skill instead. 日本語の依頼例:「スタイルを当てて」「見た目を整えて」「デザイン調整」「ダークモード」「レスポンシブ対応」「CSS書いて」。
 ---
 
 # CSS Modules
@@ -45,9 +45,15 @@ description: CSS Modules and styling conventions — design tokens, naming, vari
 
 `src/styles/` contains exactly: `tokens.css`, `reset.css`, `globals.css` (base element styles: body, headings, links). Nothing else is global. No `:global()` in component modules except to target third-party library DOM you don't control — with a comment saying which library.
 
+In Astro projects, the per-component styling primitive is the single-file scoped `<style>` block instead of `*.module.css` — see `astro`. The token/naming/variant rules here still apply.
+
 ## Motion
 
 - Animate `transform` and `opacity` only (compositor-friendly); never animate `width/height/top/left` for transitions.
 - Every significant animation (anything beyond a subtle hover/focus transition) respects `@media (prefers-reduced-motion: reduce)` — same threshold as the `a11y` skill.
 - Durations/easings as tokens (`--duration-fast`, `--ease-out`).
 - These are the invariants only — escalation (keyframes / WAAPI / animation libraries), View Transitions, entrance/exit animations, and scroll effects live in the `motion` skill.
+
+## Enforcement
+
+The token/`var()` and class-naming rules above are machine-enforced by Stylelint — see `tooling` for the exact rules and the shipped `templates/stylelint.config.mjs`.

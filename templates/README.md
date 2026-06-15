@@ -14,7 +14,13 @@ Copy and adapt:
 | `eslint.config.js` | `eslint.config.js` | Flat-config starter mapping the `tooling` skill rules |
 | `stylelint.config.mjs` | `stylelint.config.mjs` | Token-enforcement starter for CSS Modules |
 | `.semgrep/frontend-security.yml` | `.semgrep/frontend-security.yml` | Heuristic detectors (webhook-missing-verify, SSRF, secret exposure, unsanitized HTML) |
-| `size-limit.json` | `size-limit.json` | Bundle-budget config (~170 kB/route); add a `size` script and wire into CI |
+| `size-limit.json` | `size-limit.json` | Bundle-budget config (~170 kB/route); needs a preset + `size` script (see below) |
+
+`size-limit` does nothing on its own — install a preset so it knows how to measure:
+`npm i -D size-limit @size-limit/preset-app` (use `@size-limit/file` if you only point at
+prebuilt files), add `"size": "size-limit"` to `package.json` scripts, and tune `path`/`limit`
+in `size-limit.json` to your build output. (With `preset-app` the `gzip` field is redundant —
+it already reports gzip/brotli.)
 
 After copying, replace placeholder org/team handles, pin tool versions, and verify each gate
 actually runs against your stack. The configs encode policy from the skills — when a skill

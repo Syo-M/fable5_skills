@@ -27,7 +27,7 @@ A change is mergeable only when all gates pass; gates may not be skipped or mark
 
 - Updates via Renovate/Dependabot: grouped, with a minimum release age of 3 days (cooldown) so freshly-published compromised versions don't auto-merge. Break-glass: a fix for a known exploited/critical CVE may bypass the cooldown with a named approver's sign-off recorded on the PR.
 - Emit an SBOM (CycloneDX) in CI for release builds.
-- Pin GitHub Actions (and other CI plugins) by commit SHA.
+- Pin GitHub Actions (and other CI plugins) by commit SHA; pin CI container images (e.g. the Semgrep job's `semgrep/semgrep`) by digest (`@sha256:…`), not a floating tag.
 - Add-time vetting rules live in `frontend-security` (install scripts, typosquatting, registry pinning).
 
 ## License policy

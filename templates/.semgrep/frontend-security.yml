@@ -2,6 +2,9 @@
 # Copy to .semgrep/ (referenced by templates/github/workflows/ci.yml). These are
 # HEURISTICS — tune patterns to your validation/auth helpers and treat findings as
 # "prove this is safe", not "this is definitely a bug". Pairs with the frontend-security skill.
+# severity: ERROR means `semgrep ci` exits non-zero and BLOCKS the merge (gate 8 in
+# `governance`). After a human confirms a finding is safe, suppress that line with a
+# trailing `// nosemgrep: <rule-id> — <reason>` rather than downgrading the rule.
 rules:
   # Secret-like value exposed to the client bundle via a public env prefix.
   - id: public-env-secret-exposed
@@ -12,7 +15,10 @@ rules:
       Anything under a public prefix ships to the browser — move secrets server-side.
       See frontend-security: Secrets, env, logging.
     patterns:
-      - pattern-regex: (NEXT_PUBLIC_|VITE_|PUBLIC_)[A-Z0-9_]*(SECRET|TOKEN|PASSWORD|PRIVATE|API_KEY|APIKEY)
+      # High-signal secret words only. NOT included on purpose (legitimately public): DSN
+      # (Sentry), AUTH_DOMAIN (Firebase), bare TOKEN for publishable map/widget tokens stays
+      # but is the noisiest — tune per project.
+      - pattern-regex: (NEXT_PUBLIC_|VITE_|PUBLIC_)[A-Z0-9_]*(SECRET|TOKEN|PASSWORD|PASSPHRASE|PRIVATE|API_KEY|APIKEY|CREDENTIAL|ACCESS_KEY|CONNECTION_STRING|SIGNING_KEY)
 
   # dangerouslySetInnerHTML with a non-literal that isn't run through a sanitizer.
   - id: unsanitized-dangerously-set-inner-html
@@ -21,28 +27,79 @@ rules:
     message: >-
       dangerouslySetInnerHTML with dynamic content must be sanitized with DOMPurify
       at output time. See frontend-security: XSS.
+    # Quoted: the `: ` inside `__html:` is a YAML mapping indicator if left as a plain scalar,
+    # which makes Semgrep fail to load the whole ruleset.
     patterns:
-      - pattern: dangerouslySetInnerHTML={{ __html: $X }}
-      - pattern-not: dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(...) }}
-      - pattern-not: dangerouslySetInnerHTML={{ __html: $S.sanitize(...) }}
-      - pattern-not: dangerouslySetInnerHTML={{ __html: sanitize(...) }}
-      - pattern-not: dangerouslySetInnerHTML={{ __html: "..." }}
+      - pattern: 'dangerouslySetInnerHTML={{ __html: $X }}'
+      - pattern-not: 'dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(...) }}'
+      - pattern-not: 'dangerouslySetInnerHTML={{ __html: $S.sanitize(...) }}'
+      - pattern-not: 'dangerouslySetInnerHTML={{ __html: sanitize(...) }}'
+      - pattern-not: 'dangerouslySetInnerHTML={{ __html: "..." }}'
+
+  # Direct DOM HTML sinks (outside React/JSX) with non-static content.
+  - id: unsanitized-dom-inner-html
+    languages: [typescript, javascript, tsx, jsx]
+    severity: ERROR
+    message: >-
+      Assigning dynamic content to innerHTML/outerHTML or calling insertAdjacentHTML with it
+      is an XSS sink. Sanitize with DOMPurify, or use textContent for plain text.
+      See frontend-security: XSS.
+    patterns:
+      - pattern-either:
+          - pattern: $EL.innerHTML = $X
+          - pattern: $EL.outerHTML = $X
+          # `+=` is a distinct AST node and a classic XSS sink (appending user input).
+          - pattern: $EL.innerHTML += $X
+          - pattern: $EL.outerHTML += $X
+          - pattern: $EL.insertAdjacentHTML($POS, $X)
+      # Static strings (incl. clearing with "") and sanitized values are fine.
+      - pattern-not: $EL.innerHTML = "..."
+      - pattern-not: $EL.outerHTML = "..."
+      - pattern-not: $EL.innerHTML += "..."
+      - pattern-not: $EL.outerHTML += "..."
+      - pattern-not: $EL.insertAdjacentHTML($POS, "...")
+      - pattern-not: $EL.innerHTML = DOMPurify.sanitize(...)
+      - pattern-not: $EL.outerHTML = DOMPurify.sanitize(...)
+      - pattern-not: $EL.innerHTML += DOMPurify.sanitize(...)
+      - pattern-not: $EL.outerHTML += DOMPurify.sanitize(...)
+      - pattern-not: $EL.insertAdjacentHTML($POS, DOMPurify.sanitize(...))
+      - pattern-not: $EL.innerHTML = $S.sanitize(...)
+      - pattern-not: $EL.outerHTML = $S.sanitize(...)
+      - pattern-not: $EL.innerHTML += $S.sanitize(...)
+      - pattern-not: $EL.outerHTML += $S.sanitize(...)
+      - pattern-not: $EL.insertAdjacentHTML($POS, $S.sanitize(...))
+
+  # Astro set:html directive with a dynamic expression (generic mode — Semgrep has no .astro parser).
+  - id: unsanitized-astro-set-html
+    languages: [generic]
+    paths:
+      include: ["*.astro"]
+    severity: ERROR
+    message: >-
+      set:html with dynamic content is an XSS sink in Astro. Sanitize with isomorphic-dompurify
+      before rendering. See frontend-security: XSS.
+    patterns:
+      - pattern-regex: set:html=\{
+      - pattern-not-regex: set:html=\{[^}]*[Ss]anitize
 
   # Insecure randomness used for something that looks security-relevant.
   - id: insecure-random-for-secret
     languages: [typescript, javascript]
-    severity: WARNING
+    severity: ERROR
     message: >-
       Math.random() is not cryptographically secure. Use crypto.randomUUID() /
-      crypto.getRandomValues() for tokens, nonces, ids, or secrets.
+      crypto.getRandomValues() for tokens, nonces, or secrets.
       See frontend-security: Sessions, cookies, JWT.
     patterns:
       - pattern: Math.random()
       - pattern-inside: |
           $F(...) { ... }
+      # Deliberately omits the bare token "id": it matched non-security helpers like
+      # buildSlideId / gridId and, now that this rule is ERROR, would block them. Add
+      # narrow names (e.g. sessionId) explicitly if your codebase needs them.
       - metavariable-regex:
           metavariable: $F
-          regex: (?i).*(token|secret|nonce|otp|session|key|password|salt|id).*
+          regex: (?i).*(token|secret|nonce|otp|session|password|salt|apikey|csrf).*
 
   # Webhook handler that reads the body but contains NO signature-verification call at all.
   # NOTE: Semgrep cannot model call ORDER here (pattern-not-inside excludes a verify call
@@ -50,7 +107,7 @@ rules:
   # case — not "verified but after the read." The latter needs taint mode / human review.
   - id: webhook-handler-missing-signature-verify
     languages: [typescript, javascript]
-    severity: WARNING
+    severity: ERROR
     paths:
       include: ["**/webhook*/**", "**/*webhook*"]
     message: >-
@@ -61,24 +118,42 @@ rules:
       - pattern-either:
           - pattern: await $REQ.json()
           - pattern: await $REQ.text()
+          # Raw-body readers — Stripe & many providers require the raw bytes for HMAC.
+          - pattern: await $REQ.arrayBuffer()
+          - pattern: await $REQ.blob()
+          - pattern: await $REQ.formData()
+          - pattern: $REQ.rawBody
+          - pattern: await buffer($REQ)
       - pattern-not-inside: |
           ... $VERIFY(...) ...
       - metavariable-regex:
           metavariable: $VERIFY
           regex: (?i).*(verify|constructEvent|validateSignature|verifyHmac).*
 
-  # Outbound fetch to a URL built from request input (SSRF surface) — flag for host allow-list review.
+  # Outbound request to a URL built DIRECTLY from request input (SSRF surface).
+  # Catches fetch/axios/got/ky called with a request property inline. The indirect case
+  # (`const u = req.body.url; fetch(u)`) needs taint mode or human review — out of scope here.
   - id: fetch-url-from-request-input
     languages: [typescript, javascript]
-    severity: WARNING
+    severity: ERROR
     message: >-
-      fetch() to a user-influenced URL is an SSRF surface. Allow-list hosts, block
+      An outbound request to a user-influenced URL is an SSRF surface. Allow-list hosts, block
       private/link-local/metadata ranges, and re-validate after redirects.
       See frontend-security: Outbound requests — SSRF & webhooks.
     patterns:
       - pattern-either:
           - pattern: fetch($REQ.$PROP, ...)
           - pattern: fetch(`...${$REQ.$PROP}...`, ...)
+          - pattern: axios($REQ.$PROP, ...)
+          - pattern: axios.$M($REQ.$PROP, ...)
+          - pattern: got($REQ.$PROP, ...)
+          - pattern: got.$M($REQ.$PROP, ...)
+          - pattern: ky($REQ.$PROP, ...)
+          - pattern: ky.$M($REQ.$PROP, ...)
+      # Anchored (^...$): $REQ is the request OBJECT itself, so it must be EXACTLY one of these
+      # names. Without anchors, a substring match blocks safe internals like `requestConfig.url`,
+      # `queryClient.baseUrl`, `inputRef.current`. (Contrast the insecure-random $F regex, which is
+      # intentionally unanchored to catch descriptive names like `generateSessionToken`.)
       - metavariable-regex:
           metavariable: $REQ
-          regex: (req|request|searchParams|params|body|input|query)
+          regex: ^(req|request|searchParams|params|body|input|query)$

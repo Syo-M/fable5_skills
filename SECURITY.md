@@ -24,6 +24,12 @@ security intake channel here.)
 - Include: affected file/skill, the insecure pattern it permits or produces, and a
   minimal example.
 
+> Note: this repo currently has a single maintainer (`@Syo-M`), so these targets are
+> best-effort (bus factor = 1). Any organization adopting these rules must staff at least
+> two CODEOWNERS for the privileged rule surface (`CLAUDE.md`, `.claude/**`, `templates/`)
+> and route disclosure to a team intake, not one person — otherwise both the SLA above and
+> the CODEOWNERS change-control gate degrade to a single point of failure.
+
 ## Change control for the rules
 
 - `CLAUDE.md` and `.claude/**` require CODEOWNERS review (security + platform). See `CODEOWNERS`.

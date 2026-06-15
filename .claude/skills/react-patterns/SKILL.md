@@ -50,3 +50,7 @@ description: React component and hooks conventions. Use when creating or editing
 
 - Handler props named `onX`, internal handlers `handleX`.
 - Prefer uncontrolled inputs + form submission (FormData / Server Actions / form libraries) for plain forms; controlled inputs only when you need per-keystroke logic.
+
+## Enforcement
+
+The hooks rules, complete effect deps, no-array-index-key, and named-export conventions above are machine-enforced by ESLint — see `tooling` for the rule→plugin map.

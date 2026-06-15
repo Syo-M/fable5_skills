@@ -68,13 +68,14 @@ Relevant whenever the app sends content to an LLM or renders model output (chat,
 - Secrets never appear in: client bundles (`NEXT_PUBLIC_`/`VITE_`/`PUBLIC_` vars are public by definition), repo files, logs, client-bound error messages, or URL query strings (query strings leak via logs and referrers).
 - `.env*` in `.gitignore`; commit `.env.example` with placeholders. A secret ever committed = rotate it; deleting the file does not unpublish it. Secrets scanning in CI is mandatory (see `governance`).
 - No PII, credentials, or tokens in server logs, analytics events, or error-tracker payloads — configure scrubbing (e.g. Sentry `beforeSend`). Server errors: log details server-side, return a generic message + correlation ID. Stack traces and DB errors never cross the wire.
+- Conversely, DO record security events for audit (A09 / ASVS V7): authentication success & failure, authorization denials (IDOR / 403), privilege/role changes, webhook signature-verification failures, password/email changes, and admin actions — each with actor, action, result, source IP, and correlation ID. "Don't log PII" governs the *payload*, not the security-event metadata — silent auth failures are how breaches go undetected. Make these logs tamper-evident and retained per policy.
 - Data minimization & retention: collect only what's needed; set a retention window on logs/analytics containing personal data and honor deletion requests — don't keep PII indefinitely "just in case".
 
 ## Headers & platform policy
 
 Set and keep (next.config / astro config / hosting headers):
 
-- `Content-Security-Policy`: nonce/hash-based scripts where the framework supports it; at minimum `object-src 'none'`, `base-uri 'self'`, `form-action 'self'`, no `unsafe-eval`, and `frame-ancestors 'none'` (or explicit allow-list) + `X-Frame-Options: DENY` fallback. Roll out via `Content-Security-Policy-Report-Only` first, with reports routed somewhere monitored.
+- `Content-Security-Policy`: `script-src` must NOT contain `'unsafe-inline'` (it reopens the main XSS path that framework escaping closes) — use a per-request nonce or hashes, and prefer `'strict-dynamic'`. At minimum: `script-src` without `'unsafe-inline'`/`'unsafe-eval'`, `object-src 'none'`, `base-uri 'self'`, `form-action 'self'`, and `frame-ancestors 'none'` (or explicit allow-list) + `X-Frame-Options: DENY` fallback. Roll out via `Content-Security-Policy-Report-Only` first, with reports routed somewhere monitored.
 - `Strict-Transport-Security` with a long max-age (understand the commitment before adding `preload`).
 - `Cache-Control: no-store` on authenticated/personalized responses — caching a per-user response is a data leak, not a perf win.
 - `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Cross-Origin-Opener-Policy: same-origin`, `Permissions-Policy` denying unused features.

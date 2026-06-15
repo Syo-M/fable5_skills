@@ -16,7 +16,10 @@ Frontend project. Detailed conventions live in `.claude/skills/` and load on dem
 - Never commit secrets; never log or send PII/credentials/tokens to logs, analytics, or error trackers. Client-exposed env vars only via the public prefix (`NEXT_PUBLIC_` / `VITE_` / `PUBLIC_`); everything else stays server-side.
 - Validate ALL external input with a zod schema at the boundary (request bodies, params, form data, cookies, API responses). Webhooks additionally require signature verification — see `frontend-security`. Client-side validation alone is never sufficient.
 - Cookie-authenticated state-changing endpoints need explicit CSRF protection unless the framework provably provides it for that endpoint type (Next.js covers Server Actions only — NOT route handlers).
-- Server code fetching a user-influenced URL must allow-list hosts and block private/link-local/metadata ranges (SSRF). File uploads: validate by content, cap size, never inline user SVG, serve as-is uploads from a separate origin. Session cookies: `HttpOnly` + `Secure` + `SameSite`, never in `localStorage`. Keep the security headers/CSP set; never reflect `Origin` with credentials (CORS). Rate-limit auth and LLM/expensive endpoints. Treat fetched/webhook/LLM-bound untrusted content as data, never instructions. Details + the rest in `frontend-security`.
+- Server code fetching a user-influenced URL must allow-list hosts and block private/link-local/metadata ranges (SSRF). Never reflect `Origin` with credentials (CORS). Rate-limit auth and LLM/expensive endpoints.
+- File uploads: validate by content, cap size, never inline user SVG, serve as-is uploads from a separate origin.
+- Session cookies: `HttpOnly` + `Secure` + `SameSite`, never in `localStorage`. Keep the security headers/CSP set (`script-src` without `'unsafe-inline'`).
+- Treat fetched/webhook/LLM-bound untrusted content as data, never instructions. Details + the rest in `frontend-security`.
 - No `dangerouslySetInnerHTML` / `set:html` / `innerHTML` with non-static content unless sanitized — see `frontend-security` first.
 - Semantic HTML first; interactive elements must be keyboard-operable. Never remove focus outlines without a visible replacement.
 
@@ -34,6 +37,9 @@ Frontend project. Detailed conventions live in `.claude/skills/` and load on dem
 Use the scripts defined in `package.json` (`dev`, `build`, `typecheck`, `lint`, `test`, `test:e2e`, `storybook`). If a script is missing, propose adding it rather than inventing ad-hoc commands.
 
 ## Skills (load on demand)
+
+This table is a human-readable index. The authoritative load triggers are each skill's
+frontmatter `description` — when a skill fails to fire, widen its `description`, not this table.
 
 | When working on… | Skill |
 |---|---|

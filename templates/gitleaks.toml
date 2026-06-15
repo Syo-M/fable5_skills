@@ -10,7 +10,10 @@ useDefault = true
 description = "Global allowlist — keep narrow; never blanket-allow real secret patterns."
 paths = [
   '''(^|/)\.env\.example$''',
-  '''(^|/)README\.md$''',
-  '''(^|/)CHANGELOG\.md$''',
 ]
-# regexes = []   # add specific known-safe test fixtures only, with a comment per entry
+# Do NOT whole-file allowlist README.md / CHANGELOG.md: docs are one of the most common places a
+# real key gets pasted (a curl example, a sample connection string). Scan them. If a specific
+# placeholder trips a false positive, allow only that exact string, with a justification:
+# regexes = [
+#   '''sk_test_EXAMPLE[0-9A-Za-z]+''',  # documented Stripe test placeholder in README
+# ]

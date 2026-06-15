@@ -42,7 +42,8 @@ jobs:
       - run: npm audit --audit-level=high
 
       # 7. Bundle-size budget (size-limit) — copy templates/size-limit.json to the repo root,
-      # add "size": "size-limit" to package.json scripts, and tune the limit/path to your build.
+      # install a preset (`npm i -D size-limit @size-limit/preset-app`), add "size": "size-limit"
+      # to package.json scripts, and tune the limit/path to your build. Without a preset it no-ops.
       - run: npm run size
 
   secrets-scan:
@@ -53,6 +54,12 @@ jobs:
         with:
           fetch-depth: 0
       - uses: gitleaks/gitleaks-action@v2
+        env:
+          # gitleaks-action@v2 requires a (free-to-obtain) license key for ORGANIZATION-owned
+          # repos — without it this job fails. Set the GITLEAKS_LICENSE repo/org secret. Personal
+          # repos don't need it. Free alternative if you can't license: `trufflehog` (filesystem/git
+          # scan). Mirrors `governance` gate 5 ("gitleaks or equivalent").
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
 
   license-scan:
     # 6. License check — denied license blocks (policy in `governance`)
@@ -68,19 +75,22 @@ jobs:
   security-review:
     # 8. Honor-system controls lint cannot catch (zod-at-boundary, IDOR, webhook signatures).
     # Semgrep gives them a machine backstop; tune rules to your stack and add org rulesets.
+    # NOTE: the old `semgrep/semgrep-action@v1` is archived/deprecated — run the CLI instead.
     runs-on: ubuntu-latest
+    container:
+      image: semgrep/semgrep # pin to a digest (semgrep/semgrep@sha256:…) in production
     steps:
       - uses: actions/checkout@v4
-      - uses: semgrep/semgrep-action@v1 # pin to a commit SHA in production
-        with:
-          # Start from a curated ruleset, then layer the project rules below.
-          config: >-
+      # `semgrep ci` exits non-zero on ERROR-severity findings, blocking the merge like any
+      # other gate. No Semgrep AppSec account/token is needed when SEMGREP_RULES is set.
+      - run: semgrep ci
+        env:
+          # Curated rulesets + the project rules in ./.semgrep/*.yml.
+          SEMGREP_RULES: >-
             p/owasp-top-ten
             p/react
             p/typescript
             ./.semgrep/
-      # Place project rules in .semgrep/*.yml, e.g. patterns for:
-      #  - a route handler / Server Action whose args are used before a zod .parse()
-      #  - a webhook handler that reads the body before verifying the HMAC signature
-      #  - a DB query keyed on a request id with no ownership check (IDOR)
-      # Failing findings block the merge like any other gate.
+      # Project rules live in .semgrep/*.yml (shipped: webhook-missing-verify, SSRF, secret
+      # exposure, unsanitized HTML). zod-at-boundary and IDOR have no reliable static rule —
+      # they stay human review-only per `governance` gate 8.

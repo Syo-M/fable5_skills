@@ -4,6 +4,107 @@ All notable changes to this rules repository are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/) in reverse-chronological order; this
 repo is versioned so consuming projects can pin a tag and audits can tell which rules governed which commits.
 
+## [1.5.6] - 2026-06-15
+
+### Fixed
+- `gitleaks.toml` (F7, open 3 rounds): removed the whole-file allowlist of `README.md` /
+  `CHANGELOG.md` — docs are a top place real keys get pasted (curl examples, sample connection
+  strings). They are now scanned; the config shows how to allowlist a single placeholder string
+  narrowly instead.
+
+### Added
+- `unsanitized-dom-inner-html` now also catches `innerHTML +=` / `outerHTML +=` (a distinct AST
+  node and a classic append-user-input XSS sink), with matching static/sanitized exemptions.
+- `frontend-security` (F8 / A09 / ASVS V7): an active security-event audit-logging rule — record
+  authn success/failure, authz denials (IDOR/403), privilege changes, webhook signature-verify
+  failures, and admin actions with actor/action/result/correlation-id. Closes the only OWASP
+  category with no rule at all; clarifies that "don't log PII" governs the payload, not the
+  security-event metadata.
+
+## [1.5.5] - 2026-06-15
+
+### Fixed
+- Regression from the v1.5.3 SSRF extension: the `fetch-url-from-request-input` `$REQ`
+  metavariable-regex was unanchored, so a substring match blocked safe internals like
+  `requestConfig.url` / `queryClient.baseUrl` / `inputRef.current` (all rules are ERROR =
+  merge-blocking). Anchored it to `^(req|request|searchParams|params|body|input|query)$` so it
+  only fires when the object identifier IS the request. (The `insecure-random` `$F` regex stays
+  unanchored on purpose — it matches descriptive names like `generateSessionToken`.)
+
+## [1.5.4] - 2026-06-15
+
+### Changed
+- Instruction-design (C) cleanups from the re-score:
+  - `CLAUDE.md`: noted that the skill table is a human index and the frontmatter `description`
+    is the authoritative load trigger — removes the table-vs-description dual-maintenance drift.
+  - `css-modules`: added an inbound cross-ref to `astro` (scoped `<style>` is the Astro styling
+    primitive) so `astro` is no longer an orphan node; added an "Enforcement → `tooling`" back-link.
+  - `react-patterns`: added an "Enforcement → `tooling`" back-link (hooks/effect-deps/named-export
+    rules are ESLint-enforced), wiring honor-system rules to their machine enforcement.
+- Ops/DX (D):
+  - `SECURITY.md`: documented bus factor = 1 (single maintainer) — disclosure SLAs are best-effort
+    and adopters must staff ≥2 CODEOWNERS for the privileged rule surface.
+  - `governance`: pinning guidance now explicitly covers CI container images by digest (`@sha256:…`),
+    matching the Semgrep job's image; previously only "Actions by SHA" was stated.
+
+### Deferred
+- `vite-react` intentionally keeps zero inbound skill cross-refs — it is framework-exclusive, so an
+  artificial back-link would mislead rather than help.
+- A machine cross-reference / link checker in CI is still not added: shipping an untested gate would
+  violate the repo's own "verify it works" principle. Tracked for a future round.
+
+## [1.5.3] - 2026-06-15
+
+### Fixed
+- Side effect of the v1.5.2 WARNING→ERROR promotion: `insecure-random-for-secret` matched the
+  bare token `id` (and `key`), so `Math.random()` inside non-security helpers like `buildSlideId`
+  would now *block* CI. Narrowed the function-name regex to high-signal words
+  (token/secret/nonce/otp/session/password/salt/apikey/csrf) and documented why `id` is omitted.
+
+### Added
+- Semgrep XSS coverage closing the gap the re-score flagged (rules existed in the skill but had no
+  machine backstop beyond React's `dangerouslySetInnerHTML`):
+  - `unsanitized-dom-inner-html`: direct DOM `innerHTML`/`outerHTML`/`insertAdjacentHTML` sinks with
+    non-static content (static strings + DOMPurify-sanitized values exempt).
+  - `unsanitized-astro-set-html`: Astro `set:html={…}` with a dynamic expression (generic mode,
+    scoped to `*.astro`, allows a `sanitize` call).
+- Webhook signature-verify detection now also covers raw-body readers
+  (`arrayBuffer`/`blob`/`formData`/`rawBody`/`buffer()`), so Stripe-style handlers that read raw
+  bytes for HMAC are no longer missed.
+- SSRF detection extended from `fetch` to `axios`/`got`/`ky` called inline with request input;
+  the indirect `const u = req.body.url; fetch(u)` case is documented as taint-mode/review-only.
+- Public-env secret regex widened with high-signal words (CREDENTIAL, ACCESS_KEY,
+  CONNECTION_STRING, SIGNING_KEY, PASSPHRASE). Deliberately excludes legitimately-public names
+  (Sentry `DSN`, Firebase `AUTH_DOMAIN`) to avoid false-positive blocks.
+
+## [1.5.2] - 2026-06-15
+
+### Fixed
+- Multi-agent re-score (technical / security / instruction-design / DX) surfaced that gate 8 (the
+  security-review backstop) did not actually block: `templates/.semgrep/frontend-security.yml`
+  shipped its webhook-missing-verify, SSRF, and insecure-randomness rules at `severity: WARNING`
+  (non-blocking), and `ci.yml` invoked the **archived** `semgrep/semgrep-action@v1`. Promoted the
+  three rules to `ERROR` and replaced the dead action with the current `semgrep ci` container
+  invocation (blocks on ERROR; `// nosemgrep` after human review is the escape hatch). The
+  doc-vs-enforcement claim in `governance` gate 8 is now true.
+- `templates/github/workflows/ci.yml`: the `gitleaks-action@v2` secrets-scan job failed on
+  organization-owned repos because `GITLEAKS_LICENSE` was unset. Added the env wiring + a note
+  that org repos need the (free) license key and `trufflehog` is the no-license alternative.
+- `templates/size-limit.json` did nothing without a preset: documented the required
+  `@size-limit/preset-app` install in `templates/README.md` and the `ci.yml` size step, so the
+  v1.5.1 bundle-budget gate actually runs.
+- Doc-vs-enforcement drift: `templates/stylelint.config.mjs` now enforces `var()` on spacing
+  (`margin`/`padding`/`gap`) as `tooling` already promised — bare `0`/`auto` layout values exempt.
+- `frontend-security` CSP minimum now explicitly forbids `'unsafe-inline'` in `script-src`
+  (nonce/hash + `'strict-dynamic'`); the CLAUDE.md floor echoes it. Closes the gap where banning
+  only `'unsafe-eval'` left the main XSS path open.
+
+### Changed
+- `CLAUDE.md` security floor: split the 450-char SSRF/upload/cookie/CORS run-on into four readable
+  bullets. No control removed — security-floor rules remain exempt from pruning per `SECURITY.md`.
+- `css-modules` description no longer claims "motion" (it deferred to the `motion` skill in-body
+  already); removes the trigger collision with `motion`/`design-system` on styling+animation asks.
+
 ## [1.5.1] - 2026-06-15
 
 ### Fixed

@@ -6,10 +6,20 @@ export default {
   extends: ['stylelint-config-standard'],
   plugins: ['stylelint-declaration-strict-value'],
   rules: {
-    // Require var() for themable properties — no raw hex/px for these in component modules
+    // Require var() for themable properties — no raw hex/px for these in component modules.
+    // Spacing (margin/padding/gap) must use the --space-* scale per `css-modules`/`tooling`;
+    // bare 0 / auto layout values (e.g. `margin: 0 auto`) are exempt via ignoreValues.
     'scale-unlimited/declaration-strict-value': [
-      ['/color/', 'fill', 'stroke', 'z-index', 'box-shadow', 'transition-duration'],
-      { ignoreValues: ['transparent', 'currentColor', 'inherit', 'none', 'initial', 'unset'] },
+      [
+        '/color/', 'fill', 'stroke', 'z-index', 'box-shadow', 'transition-duration',
+        '/^margin/', '/^padding/', 'gap', 'row-gap', 'column-gap',
+      ],
+      {
+        ignoreValues: [
+          'transparent', 'currentColor', 'inherit', 'none', 'initial', 'unset',
+          '/^(0|auto)( (0|auto)){0,3}$/',
+        ],
+      },
     ],
     // Ban arbitrary z-index integers (use the z-index token ladder)
     'declaration-property-value-disallowed-list': {
