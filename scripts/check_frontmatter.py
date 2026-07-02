@@ -68,8 +68,8 @@ for f in sorted(glob.glob(os.path.join(ROOT, ".claude/agents/*.md"))):
     for key in ("name", "description"):
         if not data.get(key):
             fail(f"{rel(f)}: missing `{key}`")
-    if "memory" in data and data["memory"] not in ("user", "project"):
-        fail(f"{rel(f)}: memory must be `user` or `project`, got `{data['memory']}`")
+    if "memory" in data and data["memory"] not in ("user", "project", "local"):
+        fail(f"{rel(f)}: memory must be `user`, `project`, or `local`, got `{data['memory']}`")
     if data.get("description") and "日本語の依頼例" not in data["description"]:
         fail(f"{rel(f)}: description lacks the 日本語の依頼例 trigger anchors")
     if not body.strip():

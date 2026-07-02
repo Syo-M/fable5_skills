@@ -1,13 +1,14 @@
 {
   "name": "fable-frontend",
   "displayName": "Fable Frontend Rules",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Frontend rules for React/Next.js/Vite/Astro + CSS Modules + Vitest/Playwright/Storybook: skills, adversarial review agents, and sensitive-path sign-off hooks. Path-scoped rules and CLAUDE.md are NOT bundleable in plugins — use install.sh for those.",
   "author": {
     "name": "Syo-M",
     "url": "https://github.com/Syo-M"
   },
   "repository": "https://github.com/Syo-M/fable5_skills",
+  "license": "MIT",
   "keywords": [
     "frontend",
     "react",

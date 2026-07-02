@@ -46,8 +46,13 @@ walk(root);
 const PATH_RE = /(?:^|[\s(`「])((?:\.claude|templates|scripts)\/[\w.\/-]*[\w\/])/g;
 // Paths documentation cites as ANTI-examples ("don't create this") — must not exist.
 const ANTI_EXAMPLES = new Set(['.claude/.claude']);
-// Artifacts that exist only in CONSUMING projects (created by install.sh), not in this repo.
-const INSTALLED_ARTIFACTS = new Set(['.claude/fable-skills-version', '.claude/settings.local.json']);
+// Artifacts created at install/run time (installer stamps, CLI-managed memory dirs) — not repo files.
+const INSTALLED_ARTIFACTS = new Set([
+  '.claude/fable-skills-version',
+  '.claude/settings.local.json',
+  '.claude/agent-memory',
+  '.claude/agent-memory-local',
+]);
 for (const f of mdFiles) {
   const src = readFileSync(f, 'utf8');
   for (const m of src.matchAll(PATH_RE)) {
@@ -62,5 +67,18 @@ for (const f of mdFiles) {
   }
 }
 
+// (4) README structure tree must list every shipped skill, rule, and agent
+//     (a new artifact that isn't documented is invisible to adopters — the forms.md lesson)
+const readme = readFileSync(join(root, 'README.md'), 'utf8');
+for (const name of skillDirs) {
+  if (!readme.includes(`${name}/SKILL.md`)) fail(`README tree: skill "${name}" not listed`);
+}
+for (const f of readdirSync(join(root, '.claude/rules'))) {
+  if (f.endsWith('.md') && !readme.includes(f)) fail(`README tree: rule "${f}" not listed`);
+}
+for (const f of readdirSync(join(root, '.claude/agents'))) {
+  if (f.endsWith('.md') && !readme.includes(f)) fail(`README tree: agent "${f}" not listed`);
+}
+
 if (failed) { console.error(`\n${failed} broken reference(s).`); process.exit(1); }
-console.log(`OK  cross-references: agents' skills, CLAUDE.md table (${skillDirs.size} skills), and path refs across ${mdFiles.length} md files all resolve`);
+console.log(`OK  cross-references: agents' skills, CLAUDE.md table (${skillDirs.size} skills), README tree completeness, and path refs across ${mdFiles.length} md files all resolve`);

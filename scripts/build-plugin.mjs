@@ -57,6 +57,7 @@ const manifest = {
     'Path-scoped rules and CLAUDE.md are NOT bundleable in plugins — use install.sh for those.',
   author: { name: 'Syo-M', url: 'https://github.com/Syo-M' },
   repository: 'https://github.com/Syo-M/fable5_skills',
+  license: 'MIT',
   keywords: ['frontend', 'react', 'nextjs', 'astro', 'security', 'a11y', 'testing'],
 };
 writeFileSync(join(outDir, '.claude-plugin', 'plugin.json'), JSON.stringify(manifest, null, 2) + '\n');

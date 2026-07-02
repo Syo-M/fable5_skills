@@ -2,7 +2,7 @@
 name: dependency-vetter
 description: Vets a new npm dependency before it is added — license, install scripts, maintenance, size, transitive tree, typosquatting, release recency — against the governance dependency policy. Use PROACTIVELY whenever adding or recommending a package, and when the user asks whether a package is safe/appropriate. Read-only — reports a verdict, does not install. 日本語の依頼例:「このパッケージ入れていい?」「◯◯を追加したい」「ライブラリ選定して」「依存を審査して」
 tools: Read, Grep, Glob, Bash, WebSearch, WebFetch
-memory: project
+memory: local
 skills: [governance]
 ---
 

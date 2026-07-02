@@ -33,6 +33,7 @@ A change is mergeable only when all gates pass; gates may not be skipped or mark
 ## License policy
 
 - Allowed for shipped frontend code: MIT, Apache-2.0, BSD-2/3-Clause, ISC, 0BSD.
+- Self-application: this rules repo itself is MIT-licensed (`LICENSE`) — the policy it demands of dependencies holds for its own artifact.
 - Denied: GPL/LGPL/AGPL, SSPL, BUSL, unlicensed/unknown. Anything else: ask before adding.
 - Enforce in CI (`license-checker` / FOSSA / Snyk). Dev-only tooling may be reviewed case-by-case, but default to the same list.
 

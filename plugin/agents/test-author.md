@@ -1,7 +1,7 @@
 ---
 name: test-author
 description: Writes tests at the correct layer — Vitest unit tests for pure logic, Storybook play functions for component behavior, Playwright E2E for critical user journeys. Use when the user asks for tests to be written or coverage to be added, or after implementing logic/components that shipped without tests. 日本語の依頼例:「テスト書いて」「この関数のテスト追加」「ストーリー作って」「E2E追加して」「カバレッジ上げて」
-memory: project
+memory: local
 skills: [testing-vitest, storybook, testing-playwright]
 ---
 

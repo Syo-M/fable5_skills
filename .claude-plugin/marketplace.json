@@ -9,6 +9,7 @@
     {
       "name": "fable-frontend",
       "source": "./plugin",
+      "license": "MIT",
       "description": "Skills, adversarial review agents, and sensitive-path sign-off hooks for frontend work. For path-scoped rules + CLAUDE.md (not bundleable in plugins), use install.sh from the repo."
     }
   ]

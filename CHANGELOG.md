@@ -4,6 +4,49 @@ All notable changes to this rules repository are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/) in reverse-chronological order; this
 repo is versioned so consuming projects can pin a tag and audits can tell which rules governed which commits.
 
+## [2.1.0] - 2026-07-02
+
+Adopts the valid findings from an independent external review (ChatGPT, 89/100). Each claim was
+re-verified against current official docs before acting ("verify, don't assume" — all three
+disputed facts turned out to be spec changes the docs made since our last check).
+
+### Added
+- **`LICENSE` (MIT)** — the repo demanded license policy of its dependencies while shipping none
+  itself. Propagated to the plugin manifest and marketplace entry; `governance` notes the
+  self-application.
+- installer: **`--dry-run`** (full plan, zero writes), **`--check`** (installed version stamp +
+  identical/differing/missing file counts), **`--no-import`** flags; unknown-flag rejection kept.
+- installer: with an existing `CLAUDE.md`, now **appends the official `@CLAUDE.md.fable-skills`
+  import** (idempotent, commented) so the resident core — including the security floor —
+  actually loads. Previously the sidecar sat inert unless manually merged: the external review's
+  most important catch. `--no-import` prints a strong warning instead.
+- `EVALUATION.md` — self-assessment honesty: methodology, rubric, raw-report index, explicit
+  "these scores are self-evaluation" limitation, the external 89/100 as a bias yardstick, and
+  reproduction steps. README's scoring section compressed to a summary linking it.
+- CI: `check-crossrefs.mjs` now verifies the README structure tree lists every shipped skill,
+  rule, and agent (the forms.md-omission class is now machine-caught).
+
+### Fixed (spec drift — verified against docs current as of 2026-06-30)
+- **Agent memory**: `memory: project` now means repo-tracked `.claude/agent-memory/` (git-shareable);
+  the machine-local semantics this repo intended is `memory: local`. All four agents switched to
+  `memory: local` (also avoids the sign-off hook prompting on every memory write);
+  `.claude/agent-memory-local/` gitignored here and by the installer; README corrected.
+- **Skill precedence**: current order is Enterprise > Personal > Project — README claimed project
+  wins. Corrected with guidance (don't shadow project skills from `~/.claude/skills/`).
+- `CLAUDE.md` package-manager detection now includes `yarn.lock` and `bun.lockb` (the hooks
+  already covered both — internal consistency).
+- `nextjs` skill: "No `<a>`" softened to the correct rule — `<Link>` for internal routes; plain
+  `<a>` is right for external links, downloads, and hash anchors.
+- README: settings.json install-vs-manual contradiction resolved; `forms.md` added to the tree;
+  「確実に発動」 replaced with the measured claim (85% within 3 turns; all 29 within 6);
+  an honest 対象/対象外 paragraph added up front (opinionated standard set, profiles planned in v3.0).
+- verify.yml: actions bumped to Node 24 runtimes — checkout v6.0.3 (pinned to the PEELED commit
+  of the annotated tag) and setup-node v6.4.0; resolves the runner's Node 20 deprecation warnings.
+
+### Deferred to backlog (recorded in eval/README.md)
+- Plugin runtime smoke test; installer `--uninstall`; Next/Astro eval fixtures (pre-existing).
+- Repo About/topics on GitHub are an owner-side setting (suggested topics listed in the release notes).
+
 ## [2.0.0] - 2026-07-02
 
 **Measured-milestone MAJOR — no breaking changes.** Cut only after satisfying MAINTENANCE.md's

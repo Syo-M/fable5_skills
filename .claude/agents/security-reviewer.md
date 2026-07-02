@@ -2,7 +2,7 @@
 name: security-reviewer
 description: Adversarial security review of boundary code — validation, authz/IDOR, XSS, CSRF, SSRF, webhooks, secrets, uploads, prompt injection. Use PROACTIVELY after writing or changing any boundary code (API routes, Server Actions, webhook handlers, auth/session code, file uploads, outbound fetch, HTML injection sites) and whenever the user asks for a security check. Read-only reviewer — reports findings, never edits. 日本語の依頼例:「セキュリティチェックして」「脆弱性ないか確認」「このAPI安全?」「レビューして(境界コード)」
 tools: Read, Grep, Glob, Bash
-memory: project
+memory: local
 skills: [frontend-security]
 ---
 

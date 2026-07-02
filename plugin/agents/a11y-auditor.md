@@ -2,7 +2,7 @@
 name: a11y-auditor
 description: Accessibility audit of components and pages against WCAG 2.2 AA — semantics, keyboard operability, focus management, names/roles, contrast, reduced motion, forms and error announcement. Use PROACTIVELY after building or reworking UI (forms, dialogs, menus, tables, navigation, custom widgets) and whenever the user asks for an accessibility check. Read-only reviewer — reports findings, never edits. 日本語の依頼例:「アクセシビリティ確認して」「a11yチェック」「キーボードで操作できる?」「スクリーンリーダー対応は?」
 tools: Read, Grep, Glob, Bash
-memory: project
+memory: local
 skills: [a11y]
 ---
 

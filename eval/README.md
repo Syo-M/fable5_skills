@@ -52,6 +52,10 @@ projects it writes into, and long series can hit usage limits — see run-validi
 
 - Next.js / Astro fixture projects so framework precedence is tested positively, not only via the
   one `forbid` prompt.
+- Plugin runtime smoke test: load `plugin/` via `claude --plugin-dir`, verify skills list, agent
+  launch, bare-name skill injection, and `${CLAUDE_PLUGIN_ROOT}` hook resolution (CI currently
+  gates generation freshness only).
+- installer `--uninstall` (requires recording an install manifest at install time).
 - Re-test the 3 flaky prompts (`tests-component-jp` 2/3, `chart-jp` 2/3, `motion-jp` 1/3) at
   `--max-turns 6` — the horizon finding below predicts they rate higher too.
 - DONE (v2.0.0): over-trigger negatives — 3 prompts, all 3/3 clean; the load-first directive has

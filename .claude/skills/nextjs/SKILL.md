@@ -46,7 +46,7 @@ Same auth/validation rules as Server Actions, plus: **route handlers get NO buil
 
 ## Routing & misc
 
-- Use `<Link>` for navigation, `next/image` for images, `next/font` for fonts. No `<a>`, `<img>`, or CSS `@import` of font CDNs.
+- Use `<Link>` for internal route navigation, `next/image` for images, `next/font` for fonts. Plain `<a>` is CORRECT for external links, downloads, and same-page hash anchors — never wrap those in `<Link>`. No `<img>`, no CSS `@import` of font CDNs.
 - Metadata via the `metadata` export / `generateMetadata` — not manual `<head>` tags.
 - `useSearchParams` requires a Suspense boundary; forgetting it de-optimizes the whole page.
 - Dynamic route params: validate (zod) before use — they are user input.
