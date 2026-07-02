@@ -8,6 +8,7 @@
 import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { execSync } from 'node:child_process';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const skillDirs = new Set(readdirSync(join(root, '.claude/skills')));
@@ -79,6 +80,33 @@ for (const f of readdirSync(join(root, '.claude/rules'))) {
 for (const f of readdirSync(join(root, '.claude/agents'))) {
   if (f.endsWith('.md') && !readme.includes(f)) fail(`README tree: agent "${f}" not listed`);
 }
+// hook scripts must be documented too (a new .mjs hook that isn't in the README is
+// exactly the "configured but invisible" class the external review flagged)
+for (const f of readdirSync(join(root, '.claude/hooks'))) {
+  if (f.endsWith('.mjs') && !f.endsWith('.test.mjs') && f !== 'sensitive-list.mjs' && !readme.includes(f)) {
+    fail(`README tree: hook "${f}" not listed`);
+  }
+}
+
+// (5) CHANGELOG top version must match the latest git tag (release/doc drift guard)
+try {
+  const topVer = readFileSync(join(root, 'CHANGELOG.md'), 'utf8').match(/^## \[(\d+\.\d+\.\d+)\]/m)?.[1];
+  const tags = execSync('git tag --list "v*"', { cwd: root, encoding: 'utf8' })
+    .split('\n').map((t) => t.trim().replace(/^v/, '')).filter((t) => /^\d+\.\d+\.\d+$/.test(t))
+    .sort((a, b) => a.split('.').map(Number).reduce((acc, n, i) => acc || n - b.split('.').map(Number)[i], 0));
+  const latestTag = tags.at(-1);
+  // Only enforce once a tag exists at/after the CHANGELOG top — during the pre-tag
+  // window of a release the top entry is legitimately ahead of the latest tag.
+  if (latestTag && topVer && cmpSemver(latestTag, topVer) > 0) {
+    fail(`CHANGELOG top is ${topVer} but a newer tag v${latestTag} exists — CHANGELOG is behind`);
+  }
+} catch { /* no git / no tags — skip */ }
 
 if (failed) { console.error(`\n${failed} broken reference(s).`); process.exit(1); }
-console.log(`OK  cross-references: agents' skills, CLAUDE.md table (${skillDirs.size} skills), README tree completeness, and path refs across ${mdFiles.length} md files all resolve`);
+console.log(`OK  cross-references: agents' skills, CLAUDE.md table (${skillDirs.size} skills), README tree completeness (skills/rules/agents/hooks), CHANGELOG↔tag, and path refs across ${mdFiles.length} md files all resolve`);
+
+function cmpSemver(a, b) {
+  const pa = a.split('.').map(Number), pb = b.split('.').map(Number);
+  for (let i = 0; i < 3; i++) if (pa[i] !== pb[i]) return pa[i] - pb[i];
+  return 0;
+}

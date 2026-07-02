@@ -4,6 +4,51 @@ All notable changes to this rules repository are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/) in reverse-chronological order; this
 repo is versioned so consuming projects can pin a tag and audits can tell which rules governed which commits.
 
+## [3.0.2] - 2026-07-02
+
+Adopts the valid findings from the third external review (ChatGPT, v3.0.1 → **94/100**, up from
+92; all prior findings confirmed resolved). Includes a real security fix in code this repo
+shipped in v3.0.1.
+
+### Fixed (security)
+- **Path traversal in `reviewer-write-guard.mjs`** (introduced v3.0.1): the memory-dir allow-check
+  matched the path STRING, so `.claude/agent-memory-local/x/../../../README.md` resolved outside
+  the memory dir but passed. Now normalized with `path.resolve`/`relative`; traversal and
+  prefix-lookalike (`agent-memory-localEVIL`) cases added. Reproduced before fixing.
+
+### Changed
+- **Reviewer Bash is now an ALLOWLIST, not a denylist** (deny-by-default is correct for a
+  read-only reviewer): only git diff/show/status, grep/rg, semgrep, gitleaks, npm view, test
+  runners, and read filters pass; `node -e`/`npx`/`perl`/`tar -x`/`npm run`/redirects/etc are
+  denied. Honestly scoped: Edit/Write/NotebookEdit are a hard technical block; Bash is a
+  strengthened best-effort (compound/`$()`/awk-internal writes remain residual). Guard test
+  suite 14 → 32 cases.
+- Version stamp gains **`state: stale`** + `leftover: N`: styling files left behind from a
+  previous profile (e.g. css-modules skill after switching to tailwind) are detected and warned,
+  since two styling rulebooks firing at once is worse than a local edit.
+- `build-plugin.mjs` now **strips agent-frontmatter `hooks:`** from generated plugin agents
+  (plugin subagents ignore them) and inserts a note that the plugin's reviewer contract is
+  instruction-level only — no more "configured but silently inert".
+- `merge-settings.mjs` dedup key is structured `JSON.stringify([matcher, type, command])`
+  (also repaired a stray NUL byte introduced by an earlier edit).
+- CI: `check-crossrefs.mjs` now also asserts every `.claude/hooks/*.mjs` is documented in the
+  README tree AND that the CHANGELOG top is not behind the latest git tag.
+
+### Fixed (docs/accuracy)
+- **Min-version corrected**: agent-frontmatter hooks are documented since **2.1.0** (not 2.1.145 —
+  that earlier claim was wrong); a known early bug (anthropics/claude-code#18392) meant subagent
+  hooks didn't fire, so docs now say "spec 2.1.0; verify on a recent 2.1.x". Both the prior
+  self-verification AND the external reviewer were partly wrong; re-checked against the changelog.
+- security-reviewer/a11y-auditor/dependency-vetter bodies rewritten: "instruction, not a tool
+  restriction" → the accurate split (tool-blocked on supported installs; instruction-level on
+  older CLIs / plugin loads; Bash is best-effort).
+- README: test-case total 59 → 91 (three hook suites), reviewer-write-guard added to the tree,
+  external score 89 → 94, an "evaluated environments" compatibility matrix, CI + MIT badges.
+
+### Note (owner action)
+- v3.0.1 tag IS on the remote (verified); a GitHub *Release* object and further supply-chain
+  pinning of CI-template tools (license-checker version, Semgrep image digest) remain owner-side.
+
 ## [3.0.1] - 2026-07-02
 
 Adopts the valid findings from the second external review (ChatGPT, v3.0.0 → **92/100**, up from

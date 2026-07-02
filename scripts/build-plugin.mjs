@@ -29,6 +29,22 @@ mkdirSync(join(outDir, '.claude-plugin'), { recursive: true });
 for (const dir of ['skills', 'agents', 'output-styles']) {
   cpSync(join(root, '.claude', dir), join(outDir, dir), { recursive: true });
 }
+// Plugin-loaded subagents IGNORE frontmatter `hooks:` (Claude Code strips them
+// for security). Leaving them in would read as "configured but silently inert",
+// so strip the block from the generated agents and rely on the instruction-level
+// contract there (the reviewer-write-guard tool-block only applies to install.sh installs).
+for (const f of readdirSync(join(outDir, 'agents'))) {
+  if (!f.endsWith('.md')) continue;
+  const p = join(outDir, 'agents', f);
+  const src = readFileSync(p, 'utf8');
+  const stripped = src.replace(
+    /# AGENT-HOOKS-START[\s\S]*?# AGENT-HOOKS-END\n/,
+    '# NOTE: agent-scoped hooks are omitted here — plugin-loaded subagents ignore frontmatter\n' +
+      '# `hooks:`, so the read-only contract in this plugin is instruction-level only. For the\n' +
+      '# tool-enforced version (Edit/Write blocked, Bash allow-listed), install via install.sh.\n',
+  );
+  if (stripped !== src) writeFileSync(p, stripped);
+}
 // hook scripts (+ their tests, so the plugin's claims stay verifiable)
 mkdirSync(join(outDir, 'hooks'), { recursive: true });
 for (const f of readdirSync(join(root, '.claude/hooks'))) {

@@ -233,13 +233,51 @@ if [[ -z "$DRYRUN" ]]; then
       else s_diff=$((s_diff + 1)); fi
     done < <(find "$PROFILE_DIR/$kind" -type f -print0)
   done
-  if [[ $s_miss -gt 0 ]]; then STATE="partial";
+  # leftover detection: styling artifacts owned by OTHER profiles that are still
+  # present in the target (e.g. the css-modules skill left behind after switching
+  # to tailwind). A leftover means two styling rulebooks can fire — worse than a
+  # local edit — so it gets its own state.
+  LEFTOVERS="$(node -e "
+    const fs=require('fs'), path=require('path');
+    const profilesDir='$SRC/profiles', target='$TARGET', cur='$STYLING';
+    const rel=(p)=>p; // already .claude-relative
+    const ownedByCurrent=new Set();
+    const all=new Set(['.claude/skills/css-modules','.claude/rules/styling.md']); // base styling artifacts
+    for (const prof of fs.readdirSync(profilesDir)) {
+      const pj=path.join(profilesDir,prof,'profile.json');
+      if(!fs.existsSync(pj)) continue;
+      const j=JSON.parse(fs.readFileSync(pj,'utf8'));
+      const adds=[];
+      for (const kind of ['skills','rules']) {
+        const d=path.join(profilesDir,prof,kind);
+        if(fs.existsSync(d)) for(const name of fs.readdirSync(d)) adds.push('.claude/'+kind+'/'+name);
+      }
+      adds.forEach(a=>all.add(a));
+      if(prof===cur){ adds.forEach(a=>ownedByCurrent.add(a));
+        // current profile also keeps base artifacts it does NOT exclude
+        const ex=new Set([...(j.excludes.skills||[]).map(s=>'.claude/skills/'+s), ...(j.excludes.rules||[]).map(r=>'.claude/rules/'+r)]);
+        for(const b of ['.claude/skills/css-modules','.claude/rules/styling.md']) if(!ex.has(b)) ownedByCurrent.add(b);
+      }
+    }
+    const leftovers=[...all].filter(p=>!ownedByCurrent.has(p) && fs.existsSync(path.join(target,p)));
+    console.log(leftovers.join('\n'));
+  " 2>/dev/null)"
+  s_extra=0
+  [[ -n "$LEFTOVERS" ]] && s_extra=$(printf '%s\n' "$LEFTOVERS" | grep -c .)
+  if [[ $s_extra -gt 0 ]]; then STATE="stale";
+  elif [[ $s_miss -gt 0 ]]; then STATE="partial";
   elif [[ $s_diff -gt 0 ]]; then STATE="customized";
   else STATE="synchronized"; fi
   mkdir -p "$TARGET/.claude"
-  printf 'source: https://github.com/Syo-M/fable5_skills\nversion: %s\nstyling: %s\nstate: %s\nidentical: %s\ndiffering: %s\nmissing: %s\ninstalled: %s\n' \
-    "$VERSION" "$STYLING" "$STATE" "$s_ident" "$s_diff" "$s_miss" "$(date +%Y-%m-%d)" > "$TARGET/.claude/fable-skills-version"
-  [[ "$STATE" != "synchronized" ]] && echo "note: state=$STATE ($s_diff differing, $s_miss missing) — the stamp version is the SOURCE version, not proof of full sync; see --check"
+  printf 'source: https://github.com/Syo-M/fable5_skills\nversion: %s\nstyling: %s\nstate: %s\nidentical: %s\ndiffering: %s\nmissing: %s\nleftover: %s\ninstalled: %s\n' \
+    "$VERSION" "$STYLING" "$STATE" "$s_ident" "$s_diff" "$s_miss" "$s_extra" "$(date +%Y-%m-%d)" > "$TARGET/.claude/fable-skills-version"
+  if [[ "$STATE" == "stale" ]]; then
+    echo "WARNING: state=stale — files from another styling profile remain and may fire alongside $STYLING:"
+    printf '  %s\n' "$LEFTOVERS"
+    echo "  remove them manually (a --migrate-profile helper is planned). See README「プロファイル切替」."
+  elif [[ "$STATE" != "synchronized" ]]; then
+    echo "note: state=$STATE ($s_diff differing, $s_miss missing) — the stamp version is the SOURCE version, not proof of full sync; see --check"
+  fi
 fi
 
 echo
