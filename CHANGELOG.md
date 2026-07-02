@@ -4,6 +4,15 @@ All notable changes to this rules repository are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/) in reverse-chronological order; this
 repo is versioned so consuming projects can pin a tag and audits can tell which rules governed which commits.
 
+## [3.0.3] - 2026-07-02
+
+### Changed
+- `templates/github/workflows/ci.yml` supply-chain hardening (the review's P2, completing the
+  "pin every CI tool, not just Actions" governance line): `license-checker` pinned to `@25.0.1`,
+  and the Semgrep CI image digest-pinned (`semgrep/semgrep@sha256:59fbed…`, the v1.168.0 tag at
+  pin time) instead of the mutable `:latest`. `MAINTENANCE.md` gains a re-verification row with
+  the no-auth registry-API method to re-resolve the digest on bump.
+
 ## [3.0.2] - 2026-07-02
 
 Adopts the valid findings from the third external review (ChatGPT, v3.0.1 → **94/100**, up from

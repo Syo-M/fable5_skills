@@ -70,7 +70,9 @@ jobs:
         with:
           node-version-file: .nvmrc
       - run: npm ci --ignore-scripts
-      - run: npx license-checker --production --onlyAllow "MIT;Apache-2.0;BSD-2-Clause;BSD-3-Clause;ISC;0BSD"
+      # Version-pinned so a compromised newer release can't run in CI unreviewed
+      # (bump deliberately; a devDependency + `npm run license:check` is the sturdier alternative).
+      - run: npx license-checker@25.0.1 --production --onlyAllow "MIT;Apache-2.0;BSD-2-Clause;BSD-3-Clause;ISC;0BSD"
 
   security-review:
     # 8. Honor-system controls lint cannot catch (zod-at-boundary, IDOR, webhook signatures).
@@ -78,7 +80,9 @@ jobs:
     # NOTE: the old `semgrep/semgrep-action@v1` is archived/deprecated — run the CLI instead.
     runs-on: ubuntu-latest
     container:
-      image: semgrep/semgrep # pin to a digest (semgrep/semgrep@sha256:…) in production
+      # Digest-pinned for a reproducible, tamper-evident CI image (re-resolve when bumping;
+      # see MAINTENANCE.md). Digest = the v1.168.0 tag at pin time.
+      image: semgrep/semgrep@sha256:59fbed6127ea7c5dde3ba6a85142733bb20ea9aaa36120c953904f1539aaf66e # v1.168.0
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       # `semgrep ci` exits non-zero on ERROR-severity findings, blocking the merge like any
