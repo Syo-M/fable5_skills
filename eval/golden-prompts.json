@@ -1,0 +1,31 @@
+{
+  "$comment": "Golden prompts for trigger evaluation. Scoring: PASS = every skills_all present, ≥1 of each non-empty *_any group observed, nothing in forbid observed. Fixture project is a Vite+React SPA (see fixtures/).",
+  "prompts": [
+    { "id": "css-style-jp", "lang": "ja", "prompt": "src/components/Button.tsx のボタンの見た目を整えて、ホバー時のスタイルも追加して", "skills_any": ["css-modules"], "rules_any": ["styling"] },
+    { "id": "css-darkmode-jp", "lang": "ja", "prompt": "ダークモード対応したい", "skills_any": ["css-modules", "design-system"] },
+    { "id": "security-form-jp", "lang": "ja", "prompt": "問い合わせフォームを作って。名前とメールと本文を送信できるように", "skills_any": ["frontend-security"], "skills_all": [] },
+    { "id": "security-review-jp", "lang": "ja", "prompt": "src/api/users/route.ts のセキュリティチェックして", "agents_any": ["security-reviewer"] },
+    { "id": "security-review-en", "lang": "en", "prompt": "Is src/api/users/route.ts secure? Review it.", "agents_any": ["security-reviewer"] },
+    { "id": "boundary-validation-jp", "lang": "ja", "prompt": "src/api/users/route.ts にバリデーションを追加して", "skills_any": ["frontend-security"], "rules_any": ["server-boundaries"] },
+    { "id": "webhook-jp", "lang": "ja", "prompt": "Stripeのwebhookを受信するエンドポイントを追加したい", "skills_any": ["frontend-security"] },
+    { "id": "env-var-jp", "lang": "ja", "prompt": "APIキーを環境変数で管理したい", "skills_any": ["frontend-security"] },
+    { "id": "a11y-audit-jp", "lang": "ja", "prompt": "src/components/Button.tsx がアクセシビリティ的に問題ないか確認して", "agents_any": ["a11y-auditor"] },
+    { "id": "a11y-modal-en", "lang": "en", "prompt": "Make a modal dialog component keyboard accessible with proper focus management", "skills_any": ["a11y"] },
+    { "id": "tests-unit-jp", "lang": "ja", "prompt": "src/lib/format.ts のテストを書いて", "skills_any": ["testing-vitest"], "agents_any": ["test-author"], "any_group_mode": "either" },
+    { "id": "tests-component-jp", "lang": "ja", "prompt": "Buttonコンポーネントのテスト書いて", "skills_any": ["storybook", "testing-vitest"], "agents_any": ["test-author"], "any_group_mode": "either" },
+    { "id": "story-jp", "lang": "ja", "prompt": "Buttonのストーリー作って", "skills_any": ["storybook"] },
+    { "id": "e2e-jp", "lang": "ja", "prompt": "ログインからダッシュボード表示までのE2Eテストを追加して", "skills_any": ["testing-playwright"] },
+    { "id": "vrt-jp", "lang": "ja", "prompt": "見た目のリグレッションを検知できるようにしたい", "skills_any": ["visual-regression"] },
+    { "id": "chart-jp", "lang": "ja", "prompt": "月間売上のグラフを追加して", "skills_any": ["data-viz"] },
+    { "id": "chart-en", "lang": "en", "prompt": "Add a dashboard table showing user signups with sorting", "skills_any": ["data-viz"] },
+    { "id": "motion-jp", "lang": "ja", "prompt": "カードの出現にアニメーションをつけて", "skills_any": ["motion"] },
+    { "id": "image-heavy-jp", "lang": "ja", "prompt": "トップページの画像が重いので最適化して", "skills_any": ["images-media"] },
+    { "id": "i18n-jp", "lang": "ja", "prompt": "英語と日本語の多言語対応をしたい", "skills_any": ["i18n"] },
+    { "id": "dep-vet-jp", "lang": "ja", "prompt": "dayjsを入れていい?", "agents_any": ["dependency-vetter"] },
+    { "id": "dep-vet-en", "lang": "en", "prompt": "Should we add lodash to this project?", "agents_any": ["dependency-vetter"] },
+    { "id": "preship-jp", "lang": "ja", "prompt": "出荷前チェックして", "skills_any": ["pre-ship"] },
+    { "id": "newcomp-jp", "lang": "ja", "prompt": "新しいCardコンポーネント作って", "skills_any": ["new-component", "react-patterns"] },
+    { "id": "react-state-jp", "lang": "ja", "prompt": "再レンダリングが多い気がするので直したい", "skills_any": ["react-patterns"] },
+    { "id": "negative-nextjs-jp", "lang": "ja", "prompt": "このプロジェクトのルーティングを整理したい", "forbid_skills": ["nextjs", "astro"], "notes": "Vite fixture: framework precedence must NOT load nextjs/astro" }
+  ]
+}

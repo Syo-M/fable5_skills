@@ -39,7 +39,9 @@ Do this every quarter AND whenever a covered framework ships a major version.
 3. If `.claude/` changed: `node scripts/build-plugin.mjs` and commit the regenerated `plugin/`.
 4. `git fetch` before pushing — this repo receives pushes from multiple sessions/machines.
 5. Annotated tag `vX.Y.Z` = the CHANGELOG heading; push main + tag together.
-6. Formal 3-persona scoring cadence: at minimum before every MAJOR bump; record results in
+6. Trigger evaluation (`eval/` — see its README): `node eval/run-eval.mjs --runs 3` before a MAJOR
+   release; 1-run signal checks after big description/trigger changes. Commit the report.
+7. Formal 3-persona scoring cadence: at minimum before every MAJOR bump; record results in
    README「品質評価」 (rubric + persona prompts are reproduced there).
 
 ## Pruning

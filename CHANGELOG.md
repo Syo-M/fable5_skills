@@ -4,6 +4,28 @@ All notable changes to this rules repository are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/) in reverse-chronological order; this
 repo is versioned so consuming projects can pin a tag and audits can tell which rules governed which commits.
 
+## [1.9.0] - 2026-07-02
+
+### Added
+- `eval/` — golden-prompt trigger evaluation harness: 26 JP/EN prompts with expected
+  skill/agent/rule activations, run headless (`claude -p`) in a disposable fixture project
+  installed via `install.sh`; activations OBSERVED by hooks (PreToolUse/PostToolUse
+  Skill|Task|Agent, SubagentStart, InstructionsLoaded) — the model cannot self-report.
+  Scoring supports all/any/either groups and negative expectations (`forbid_skills`:
+  `nextjs` must not fire in a Vite fixture). Reports committed under `eval/reports/`.
+- First measured trigger-reliability results (consolidated in `eval/reports/v1.9.0-summary.md`):
+  baseline 12/26 → root cause identified (model skips loading rulebook skills for directly-doable
+  work; anchors were NOT the problem) → fix → 9/14 prior failures flipped; 22/26 prompts have
+  observed activation post-fix; 4 persistent stochastic misses documented as known gaps.
+  Layer reliability: agents > path rules > procedure skills > domain-rulebook skills.
+
+### Changed
+- `CLAUDE.md`: added the load-first directive ("Loading skills is not optional — find the matching
+  row and LOAD that skill before writing code") — the measured fix for the dominant failure mode.
+- `MAINTENANCE.md` release checklist: trigger evaluation added (`--runs 3` before a MAJOR release).
+- README: hooks caveats gain the verified 2.1.87 gotcha — ONE unknown hook event name in
+  settings.json silently disables ALL hooks in that file; fire-test after wiring hooks.
+
 ## [1.8.0] - 2026-07-02
 
 ### Added

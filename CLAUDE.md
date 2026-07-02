@@ -2,6 +2,8 @@
 
 Frontend project. Detailed conventions live in `.claude/skills/` and load on demand — do not duplicate them here. Sole exception: the security/a11y invariants below are duplicated deliberately so they hold even when no skill loads; do not "clean them up".
 
+**Loading skills is not optional.** Before writing or editing any code, find the matching row(s) in the skill index at the bottom and LOAD that skill first — even for small tasks you could do directly. The skill is the rulebook; code written without consulting an applicable skill is nonconforming. When a rule file or this document names a skill, loading it is part of the task.
+
 ## Stack
 
 - TypeScript **strict mode**.
