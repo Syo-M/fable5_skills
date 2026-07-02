@@ -1,7 +1,7 @@
 # fable-frontend plugin (GENERATED — do not edit)
 
 Generated from `.claude/` by `scripts/build-plugin.mjs` (source of truth: the repo root).
-Version 2.1.0. Install:
+Version 3.0.0. Install:
 
 ```
 /plugin marketplace add Syo-M/fable5_skills
@@ -14,6 +14,8 @@ NOT included (plugin limitations — use `install.sh` from the repo for the full
 - `.claude/rules/` path-scoped tripwires (plugins cannot bundle rules)
 - `CLAUDE.md` project floor (a plugin-root CLAUDE.md is not loaded)
 - `.claude/workflows/` (harness-specific)
+- Styling profiles: this plugin ships the DEFAULT (css-modules) profile only; for
+  `--styling tailwind` / `minimal`, install via `install.sh` instead.
 
 Note: agents inject skills by bare name (e.g. `test-author` → `testing-vitest`); verify injection
 resolves in your Claude Code version when running agents from the namespaced plugin context.

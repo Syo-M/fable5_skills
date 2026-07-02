@@ -1,0 +1,1 @@
+- Styling: **Tailwind CSS v4** (utility classes; design tokens via `@theme`). No inline styles, no CSS-in-JS, no parallel CSS Modules. Sole exception: Astro single-file scoped `<style>` per the `astro` skill.

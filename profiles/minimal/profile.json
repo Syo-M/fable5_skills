@@ -1,0 +1,7 @@
+{
+  "name": "minimal",
+  "description": "No mandated styling system — only the floor (consistency, no inline styles on shared components). For teams with their own styling stack.",
+  "styling_skill": null,
+  "excludes": { "skills": ["css-modules"], "rules": ["styling.md"], "templates": ["stylelint.config.mjs"] },
+  "adds": { "skills": [], "rules": [] }
+}

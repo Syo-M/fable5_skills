@@ -1,0 +1,1 @@
+- Styling: **CSS Modules** (`*.module.css`). No inline styles, no CSS-in-JS, no utility-class frameworks. Sole exception: Astro single-file scoped `<style>` per the `astro` skill.

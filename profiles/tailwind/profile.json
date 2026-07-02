@@ -1,0 +1,7 @@
+{
+  "name": "tailwind",
+  "description": "Tailwind CSS (v4) styling profile: @theme design tokens, class-order via prettier plugin, no dynamic class concatenation.",
+  "styling_skill": "tailwind",
+  "excludes": { "skills": ["css-modules"], "rules": ["styling.md"], "templates": ["stylelint.config.mjs"] },
+  "adds": { "skills": ["skills/tailwind"], "rules": ["rules/styling.md"] }
+}

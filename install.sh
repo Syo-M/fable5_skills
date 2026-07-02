@@ -3,23 +3,26 @@
 # Replaces the error-prone manual `cp -r` (which creates .claude/.claude/ and
 # clobbers an existing settings.json) with a merge-safe, versioned install.
 #
-#   ./install.sh /path/to/your-project [--force] [--dry-run] [--check] [--no-import]
+#   ./install.sh /path/to/your-project [--styling css-modules|tailwind|minimal]
+#                [--force] [--dry-run] [--check] [--no-import]
 #
+#   --styling    styling profile (default: css-modules). Swaps the styling skill/rule/
+#                CLAUDE.md styling section; see profiles/<name>/profile.json
 #   --force      overwrite files that already exist in the target (default: skip them)
 #   --dry-run    print the full plan (install/skip/overwrite/merge/append) without changing anything
 #   --check      report installed version vs this repo and how many files differ, then exit
 #   --no-import  do not append the @CLAUDE.md.fable-skills import to an existing CLAUDE.md
 #
 # What it does:
-#   1. Copies .claude/{skills,rules,agents,hooks,output-styles,workflows} file-by-file
+#   1. Copies .claude/{skills,rules,agents,hooks,output-styles,workflows} file-by-file,
+#      minus the chosen profile's excludes, plus its adds
 #      (existing files are SKIPPED unless --force — your local edits survive updates)
 #   2. settings.json: copies if absent, otherwise MERGES our hook entries into yours (idempotent)
-#   3. CLAUDE.md: copies if absent; otherwise saves ours as CLAUDE.md.fable-skills AND appends
-#      an `@CLAUDE.md.fable-skills` import line to your CLAUDE.md (idempotent; official
-#      @path import syntax) so the resident core actually loads — without this, the security
-#      floor would silently not apply. Opt out with --no-import (a warning is printed instead).
+#   3. CLAUDE.md: generated for the chosen profile (scripts/build-claude-md.mjs); copies if absent,
+#      otherwise saves as CLAUDE.md.fable-skills AND appends an `@CLAUDE.md.fable-skills` import
+#      (idempotent) so the resident core actually loads. Opt out with --no-import (warns).
 #   4. Ensures .claude/settings.local.json and .claude/agent-memory-local/ are gitignored
-#   5. Stamps .claude/fable-skills-version (tag + commit) so audits know which rules govern
+#   5. Stamps .claude/fable-skills-version (tag + date + styling profile) for audits
 # It does NOT copy templates/ (CI gates, lint configs) — those are opt-in; see templates/README.md.
 set -euo pipefail
 
@@ -29,21 +32,25 @@ FORCE=""
 DRYRUN=""
 CHECK=""
 NOIMPORT=""
-for arg in "$@"; do
-  case "$arg" in
-    --force) FORCE="1" ;;
-    --dry-run) DRYRUN="1" ;;
-    --check) CHECK="1" ;;
-    --no-import) NOIMPORT="1" ;;
-    -*) echo "error: unknown flag '$arg' (supported: --force --dry-run --check --no-import)" >&2; exit 1 ;;
+STYLING="css-modules"
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --force) FORCE="1"; shift ;;
+    --dry-run) DRYRUN="1"; shift ;;
+    --check) CHECK="1"; shift ;;
+    --no-import) NOIMPORT="1"; shift ;;
+    --styling)
+      [[ $# -ge 2 ]] || { echo "error: --styling needs a value" >&2; exit 1; }
+      STYLING="$2"; shift 2 ;;
+    -*) echo "error: unknown flag '$1' (supported: --styling <name> --force --dry-run --check --no-import)" >&2; exit 1 ;;
     *)
-      if [[ -n "$TARGET" ]]; then echo "error: multiple targets given ('$TARGET', '$arg')" >&2; exit 1; fi
-      TARGET="$arg" ;;
+      if [[ -n "$TARGET" ]]; then echo "error: multiple targets given ('$TARGET', '$1')" >&2; exit 1; fi
+      TARGET="$1"; shift ;;
   esac
 done
 
 if [[ -z "$TARGET" || ! -d "$TARGET" ]]; then
-  echo "usage: ./install.sh /path/to/your-project [--force] [--dry-run] [--check] [--no-import]" >&2
+  echo "usage: ./install.sh /path/to/your-project [--styling <profile>] [--force] [--dry-run] [--check] [--no-import]" >&2
   [[ -n "$TARGET" ]] && echo "error: '$TARGET' is not a directory" >&2
   exit 1
 fi
@@ -53,54 +60,103 @@ if [[ "$TARGET" == "$SRC" ]]; then
   exit 1
 fi
 command -v node >/dev/null || { echo "error: node is required (hooks + settings merge)" >&2; exit 1; }
+PROFILE_DIR="$SRC/profiles/$STYLING"
+if [[ ! -f "$PROFILE_DIR/profile.json" ]]; then
+  echo "error: unknown styling profile '$STYLING' — available: $(ls "$SRC/profiles")" >&2
+  exit 1
+fi
 VERSION="$(git -C "$SRC" describe --tags --always --dirty 2>/dev/null || echo unknown)"
 
-# ---------- --check: read-only status report ----------
+# profile excludes (repo-relative .claude/... paths), one per line
+EXCLUDES="$(node -e "
+const p=require('$PROFILE_DIR/profile.json');
+const out=[];
+for (const s of p.excludes.skills) out.push('.claude/skills/'+s);
+for (const r of p.excludes.rules) out.push('.claude/rules/'+r);
+console.log(out.join('\n'));
+")"
+is_excluded() {
+  local rel="$1"
+  while IFS= read -r ex; do
+    [[ -z "$ex" ]] && continue
+    [[ "$rel" == "$ex" || "$rel" == "$ex"/* ]] && return 0
+  done <<< "$EXCLUDES"
+  return 1
+}
+
+# ---------- --check: read-only status report (profile-aware via the stamp) ----------
 if [[ -n "$CHECK" ]]; then
   echo "source repo version: $VERSION"
   if [[ -f "$TARGET/.claude/fable-skills-version" ]]; then
     echo "target install stamp:"
     sed 's/^/  /' "$TARGET/.claude/fable-skills-version"
+    stamped="$(grep '^styling:' "$TARGET/.claude/fable-skills-version" | awk '{print $2}' || true)"
+    if [[ -n "$stamped" && "$stamped" != "$STYLING" ]]; then
+      echo "note: comparing with --styling $STYLING but the stamp says '$stamped' — pass --styling $stamped for an accurate diff"
+    fi
   else
     echo "target install stamp: none (not installed via install.sh)"
   fi
   identical=0; differs=0; missing=0
   while IFS= read -r -d '' f; do
     rel="${f#$SRC/}"
+    is_excluded "$rel" && continue
     if [[ ! -e "$TARGET/$rel" ]]; then missing=$((missing + 1));
     elif cmp -s "$f" "$TARGET/$rel"; then identical=$((identical + 1));
     else differs=$((differs + 1)); fi
   done < <(find "$SRC/.claude/skills" "$SRC/.claude/rules" "$SRC/.claude/agents" "$SRC/.claude/hooks" \
                 "$SRC/.claude/output-styles" "$SRC/.claude/workflows" -type f -print0 2>/dev/null)
-  echo "files vs this repo: $identical identical, $differs differ (local edits or newer upstream), $missing missing"
+  # profile adds are part of the contract too
+  for kind in skills rules; do
+    [[ -d "$PROFILE_DIR/$kind" ]] || continue
+    while IFS= read -r -d '' f; do
+      rel=".claude/$kind/${f#$PROFILE_DIR/$kind/}"
+      if [[ ! -e "$TARGET/$rel" ]]; then missing=$((missing + 1));
+      elif cmp -s "$f" "$TARGET/$rel"; then identical=$((identical + 1));
+      else differs=$((differs + 1)); fi
+    done < <(find "$PROFILE_DIR/$kind" -type f -print0)
+  done
+  echo "files vs this repo ($STYLING profile): $identical identical, $differs differ, $missing missing"
   echo "run without --check to install missing files (existing ones are skipped unless --force)"
   exit 0
 fi
 
 RUN="run"
 [[ -n "$DRYRUN" ]] && RUN="plan" && echo "DRY RUN — nothing will be written"
+echo "styling profile: $STYLING"
 
 copied=0; skipped=0; overwritten=0
-copy_tree() {
-  local dir="$1"
-  local f rel dest
-  [[ -d "$SRC/.claude/$dir" ]] || return 0
-  while IFS= read -r -d '' f; do
-    rel="${f#$SRC/}"
-    dest="$TARGET/$rel"
-    if [[ -e "$dest" && -z "$FORCE" ]]; then
-      skipped=$((skipped + 1))
-    elif [[ -e "$dest" ]]; then
-      [[ -z "$DRYRUN" ]] && { mkdir -p "$(dirname "$dest")"; cp "$f" "$dest"; } || echo "[$RUN] overwrite: $rel"
-      overwritten=$((overwritten + 1))
-    else
-      [[ -z "$DRYRUN" ]] && { mkdir -p "$(dirname "$dest")"; cp "$f" "$dest"; }
-      copied=$((copied + 1))
-    fi
-  done < <(find "$SRC/.claude/$dir" -type f -print0)
+install_file() { # $1 = source file, $2 = repo-relative destination path
+  local f="$1" rel="$2" dest
+  dest="$TARGET/$rel"
+  if [[ -e "$dest" && -z "$FORCE" ]]; then
+    skipped=$((skipped + 1))
+  elif [[ -e "$dest" ]]; then
+    [[ -z "$DRYRUN" ]] && { mkdir -p "$(dirname "$dest")"; cp "$f" "$dest"; } || echo "[$RUN] overwrite: $rel"
+    overwritten=$((overwritten + 1))
+  else
+    [[ -z "$DRYRUN" ]] && { mkdir -p "$(dirname "$dest")"; cp "$f" "$dest"; }
+    copied=$((copied + 1))
+  fi
 }
 
-for dir in skills rules agents hooks output-styles workflows; do copy_tree "$dir"; done
+for dir in skills rules agents hooks output-styles workflows; do
+  [[ -d "$SRC/.claude/$dir" ]] || continue
+  while IFS= read -r -d '' f; do
+    rel="${f#$SRC/}"
+    is_excluded "$rel" && continue
+    install_file "$f" "$rel"
+  done < <(find "$SRC/.claude/$dir" -type f -print0)
+done
+
+# profile adds: profiles/<name>/skills/** → .claude/skills/**, rules/** → .claude/rules/**
+for kind in skills rules; do
+  [[ -d "$PROFILE_DIR/$kind" ]] || continue
+  while IFS= read -r -d '' f; do
+    rel=".claude/$kind/${f#$PROFILE_DIR/$kind/}"
+    install_file "$f" "$rel"
+  done < <(find "$PROFILE_DIR/$kind" -type f -print0)
+done
 
 # settings.json — copy or merge (never clobber)
 if [[ ! -f "$TARGET/.claude/settings.json" ]]; then
@@ -116,14 +172,17 @@ else
   fi
 fi
 
-# CLAUDE.md — copy, or sidecar + @import so the resident core actually loads
+# CLAUDE.md — generated for the chosen profile; copy, or sidecar + @import
+CLAUDE_TMP="$(mktemp)"
+trap 'rm -f "$CLAUDE_TMP"' EXIT
+node "$SRC/scripts/build-claude-md.mjs" --profile "$STYLING" --stdout > "$CLAUDE_TMP"
 IMPORT_LINE="@CLAUDE.md.fable-skills"
 if [[ ! -f "$TARGET/CLAUDE.md" ]]; then
-  [[ -z "$DRYRUN" ]] && cp "$SRC/CLAUDE.md" "$TARGET/CLAUDE.md"
-  echo "[$RUN] CLAUDE.md: install"
+  [[ -z "$DRYRUN" ]] && cp "$CLAUDE_TMP" "$TARGET/CLAUDE.md"
+  echo "[$RUN] CLAUDE.md: install ($STYLING profile)"
 else
-  [[ -z "$DRYRUN" ]] && cp "$SRC/CLAUDE.md" "$TARGET/CLAUDE.md.fable-skills"
-  echo "[$RUN] CLAUDE.md exists: save ours as CLAUDE.md.fable-skills"
+  [[ -z "$DRYRUN" ]] && cp "$CLAUDE_TMP" "$TARGET/CLAUDE.md.fable-skills"
+  echo "[$RUN] CLAUDE.md exists: save ours as CLAUDE.md.fable-skills ($STYLING profile)"
   if [[ -n "$NOIMPORT" ]]; then
     echo ""
     echo "  WARNING: --no-import — the fable core (incl. the security floor) is NOT active yet."
@@ -151,11 +210,11 @@ done
 # version stamp for auditability
 if [[ -z "$DRYRUN" ]]; then
   mkdir -p "$TARGET/.claude"
-  printf 'source: https://github.com/Syo-M/fable5_skills\nversion: %s\ninstalled: %s\n' \
-    "$VERSION" "$(date +%Y-%m-%d)" > "$TARGET/.claude/fable-skills-version"
+  printf 'source: https://github.com/Syo-M/fable5_skills\nversion: %s\nstyling: %s\ninstalled: %s\n' \
+    "$VERSION" "$STYLING" "$(date +%Y-%m-%d)" > "$TARGET/.claude/fable-skills-version"
 fi
 
 echo
-echo "$RUN result: $copied installed, $skipped skipped (already present), $overwritten overwritten — version $VERSION"
+echo "$RUN result: $copied installed, $skipped skipped (already present), $overwritten overwritten — version $VERSION, styling $STYLING"
 echo "next: review templates/README.md for the CI gates / lint configs (opt-in copy),"
 echo "      and add project specifics (framework, commands) to CLAUDE.md."

@@ -35,8 +35,14 @@ do representative user prompts actually activate the intended skill / agent / ru
 ```bash
 node eval/run-eval.mjs                 # all prompts, 1 run each (first signal)
 node eval/run-eval.mjs --runs 3        # release-grade rates (do this before a MAJOR release)
+node eval/run-eval.mjs --styling tailwind --runs 3   # evaluate under the tailwind profile
 node eval/run-eval.mjs --only dep-vet-jp,preship-jp --keep   # debug specific prompts
 ```
+
+**Styling profiles**: prompts may carry `styling_profile` — they only run when it matches
+`--styling` (default `css-modules`); unmarked prompts run under every profile. Non-default
+profiles apply a fixture overlay from `eval/fixtures-<profile>/` (overwrites files;
+`_delete.txt` lists removals) and install via `install.sh --styling <profile>`.
 
 **Cost & cadence**: every run is a real model invocation on your account (~26 prompts × runs).
 This is a RELEASE-TIME protocol, not a per-commit CI gate — trigger behavior is stochastic, so a
@@ -55,6 +61,11 @@ projects it writes into, and long series can hit usage limits — see run-validi
 - Plugin runtime smoke test: load `plugin/` via `claude --plugin-dir`, verify skills list, agent
   launch, bare-name skill injection, and `${CLAUDE_PLUGIN_ROOT}` hook resolution (CI currently
   gates generation freshness only).
+- forms.md tripwire scope (measured v3.0.0): `rule:forms` has zero observed firings — path rules
+  inject on READ of matching files, so the tripwire covers edits of EXISTING form files, not
+  first creation (first creation is covered by load-first + the react-patterns pointer, measured
+  3/3 in reports/v3.0.0-form-tripwire-3runs.md). To measure the rule itself, add a fixture
+  containing a pre-existing ContactForm.tsx and a prompt that edits it.
 - installer `--uninstall` (requires recording an install manifest at install time).
 - Re-test the 3 flaky prompts (`tests-component-jp` 2/3, `chart-jp` 2/3, `motion-jp` 1/3) at
   `--max-turns 6` — the horizon finding below predicts they rate higher too.

@@ -5,7 +5,7 @@ description: React component and hooks conventions. Use when creating or editing
 
 # React Patterns
 
-Creating a brand-new component from scratch? Follow the `new-component` pipeline — component + CSS Module + story with play function is one unit of done. Building charts, graphs, dashboards, or data tables? Also load `data-viz` — it owns library choice, chart a11y, and dataset performance. Building a form (or anything that submits user input)? Load `frontend-security` FIRST — validation belongs at the boundary, and a form without it is nonconforming.
+Creating a brand-new component from scratch? Follow the `new-component` pipeline — component + styles + story with play function is one unit of done. Building charts, graphs, dashboards, or data tables? Also load `data-viz` — it owns library choice, chart a11y, and dataset performance. Building a form (or anything that submits user input)? Load `frontend-security` FIRST — validation belongs at the boundary, and a form without it is nonconforming.
 
 ## Components
 

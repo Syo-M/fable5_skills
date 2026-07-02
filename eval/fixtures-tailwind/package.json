@@ -1,0 +1,8 @@
+{
+  "name": "eval-fixture",
+  "private": true,
+  "type": "module",
+  "scripts": { "dev": "vite", "build": "vite build", "typecheck": "tsc --noEmit", "lint": "eslint .", "test": "vitest run", "test:e2e": "playwright test", "storybook": "storybook dev" },
+  "dependencies": { "react": "^19.0.0", "react-dom": "^19.0.0", "zod": "^4.0.0" },
+  "devDependencies": { "vite": "^7.0.0", "vitest": "^4.0.0", "typescript": "^5.6.0", "tailwindcss": "^4.3.0", "@tailwindcss/vite": "^4.3.0" }
+}

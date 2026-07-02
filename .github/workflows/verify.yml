@@ -46,6 +46,29 @@ jobs:
         run: node scripts/check-workflow-syntax.mjs
       - name: plugin/ is fresh (generated from .claude/, no drift)
         run: node scripts/build-plugin.mjs --check
+      - name: CLAUDE.md is fresh (generated from core/ + default profile)
+        run: node scripts/build-claude-md.mjs --check
+
+      # Installer smoke: the @import append is the mechanism that makes the security
+      # floor load on existing projects — it must never regress silently.
+      - name: Installer smoke (3 profiles + import append + idempotency)
+        run: |
+          set -e
+          for prof in css-modules tailwind minimal; do
+            d="$RUNNER_TEMP/smoke-$prof"; mkdir -p "$d"
+            echo "# existing" > "$d/CLAUDE.md"
+            ./install.sh "$d" --styling "$prof" > /dev/null
+            grep -qF '@CLAUDE.md.fable-skills' "$d/CLAUDE.md"
+            test -f "$d/CLAUDE.md.fable-skills"
+            grep -q "styling: $prof" "$d/.claude/fable-skills-version"
+            ./install.sh "$d" --styling "$prof" > /dev/null   # idempotent re-run
+            test "$(grep -cF '@CLAUDE.md.fable-skills' "$d/CLAUDE.md")" = 1
+          done
+          d="$RUNNER_TEMP/smoke-tailwind"
+          test -d "$d/.claude/skills/tailwind" && test ! -d "$d/.claude/skills/css-modules"
+          d="$RUNNER_TEMP/smoke-minimal"
+          test ! -f "$d/.claude/rules/styling.md"
+          echo "installer smoke OK"
 
       # Frontmatter validity (skills/agents/rules/output-styles)
       - name: Install PyYAML (pinned)

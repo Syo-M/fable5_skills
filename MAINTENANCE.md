@@ -28,6 +28,7 @@ Do this every quarter AND whenever a covered framework ships a major version.
 | `frontend-security` | `z.strictObject` primary / `.strict()` legacy | zod 4 | zod docs |
 | `react-patterns` | React Compiler status hedge (GA but verify project adoption) | React 19.x | React blog |
 | `motion` | Motion package naming (ex-Framer Motion) | motion v11+ | motion.dev |
+| `profiles/tailwind` | v4 CSS-first config (`@theme`, no tailwind.config.js), prettier-plugin-tailwindcss | tailwindcss 4.3 / plugin 0.8 | Tailwind changelog |
 | `templates/github/workflows/ci.yml` + `.github/workflows/verify.yml` | action SHA pins current & non-vulnerable | pinned SHAs in-file | GitHub advisories; re-resolve tags via `git ls-remote` |
 | `templates/.semgrep/` | rule syntax against current Semgrep | Semgrep CI container | semgrep releases |
 | Claude Code integration (`rules`/`agents`/`memory`/`output-styles`/hooks schema, plugin layout) | formats used across `.claude/` and `scripts/build-plugin.mjs` | Claude Code docs 2026-07 | code.claude.com/docs changelog |
@@ -37,6 +38,8 @@ Do this every quarter AND whenever a covered framework ships a major version.
 1. All local checks green (same list as above — CI runs them too, but don't push red).
 2. `CHANGELOG.md` entry at the TOP (strict reverse-chronological; the CI check enforces order).
 3. If `.claude/` changed: `node scripts/build-plugin.mjs` and commit the regenerated `plugin/`.
+   If `core/` or `profiles/` changed: `node scripts/build-claude-md.mjs` and commit the
+   regenerated `CLAUDE.md` (never edit the root CLAUDE.md directly).
 4. `git fetch` before pushing — this repo receives pushes from multiple sessions/machines.
 5. Annotated tag `vX.Y.Z` = the CHANGELOG heading; push main + tag together.
 6. Trigger evaluation (`eval/` — see its README): `node eval/run-eval.mjs --runs 3` before a MAJOR

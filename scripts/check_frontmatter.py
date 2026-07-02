@@ -43,7 +43,11 @@ def rel(p: str) -> str:
 checked = 0
 
 # Skills: name + description; description must carry Japanese trigger anchors.
-for f in sorted(glob.glob(os.path.join(ROOT, ".claude/skills/*/SKILL.md"))):
+# Profile-shipped skills (profiles/*/skills/*) are held to the same contract.
+for f in sorted(
+    glob.glob(os.path.join(ROOT, ".claude/skills/*/SKILL.md"))
+    + glob.glob(os.path.join(ROOT, "profiles/*/skills/*/SKILL.md"))
+):
     checked += 1
     data, body = load(f)
     if data is None:
@@ -76,7 +80,10 @@ for f in sorted(glob.glob(os.path.join(ROOT, ".claude/agents/*.md"))):
         fail(f"{rel(f)}: empty body")
 
 # Rules: non-empty paths list of strings (path-scoped by design in this repo).
-for f in sorted(glob.glob(os.path.join(ROOT, ".claude/rules/*.md"))):
+for f in sorted(
+    glob.glob(os.path.join(ROOT, ".claude/rules/*.md"))
+    + glob.glob(os.path.join(ROOT, "profiles/*/rules/*.md"))
+):
     checked += 1
     data, body = load(f)
     if data is None:

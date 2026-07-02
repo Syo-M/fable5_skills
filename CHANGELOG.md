@@ -4,6 +4,55 @@ All notable changes to this rules repository are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/) in reverse-chronological order; this
 repo is versioned so consuming projects can pin a tag and audits can tell which rules governed which commits.
 
+## [3.0.0] - 2026-07-02
+
+**Styling is now an install-time PROFILE** — the decisive-rules principle is preserved (the
+installed AI always sees exactly one ruleset; humans choose at install time), while the biggest
+adoption blocker (CSS Modules mandate) becomes a choice. Single main branch, no fork.
+Semantically a true MAJOR: the root CLAUDE.md is now a generated artifact, the installer is
+profile-parameterized, and the installed skill set varies by profile.
+
+**Final 3-persona scores: Engineer 91.1 / Security 91.2 / LLM 91.9 — average 91.4** (all three
+approved the MAJOR; their pre-tag conditions are all addressed in this release). Details, gate
+reports, and self-assessment limitations: `EVALUATION.md`.
+
+### Added
+- `profiles/` — `css-modules` (default; the repo root IS this profile), `tailwind` (NEW skill:
+  Tailwind v4 CSS-first `@theme` tokens, no dynamic class concatenation, aria/data-variant
+  styling, prettier-plugin ordering; npm versions verified), `minimal` (floor only, for teams
+  with their own styling stack).
+- `core/CLAUDE.base.md` + `scripts/build-claude-md.mjs` — root CLAUDE.md is GENERATED
+  (byte-identical for the default profile; in-file "generated, do not edit" marker; new CI
+  freshness gate `build-claude-md --check`).
+- installer `--styling <profile>`: swaps the styling skill/rule/CLAUDE.md section via declarative
+  profile.json excludes/adds; profile-aware `--check`; profile stamped in `fable-skills-version`.
+  Documented: switching profiles later leaves the old skill behind — remove it manually
+  (`--uninstall` backlogged).
+- CI: installer smoke test (3 profiles × install + @import append + idempotency) — the mechanism
+  that loads the security floor on existing projects can no longer regress silently.
+- eval: `styling_profile` prompt field, `--styling` flag, `fixtures-tailwind` overlay, and
+  measured gates for ALL THREE profiles:
+  - default: 24/29 full-pass, **77/87 = 88.5%**/run (vs 23/29 · 85% at v2.0.0). Both directions
+    disclosed: improved — security-form-jp 0/3→1/3, chart-en 0/3→1/3 (first 3-turn activations,
+    attributable to cross-pointers); regressed — security-review-jp 3/3→2/3,
+    tests-component-jp 2/3→1/3 (n=3 noise, disclosed regardless).
+  - tailwind: 4/4 at 3/3 (12/12) — the new skill fires on Japanese prompts first-time,
+    the profile-swapped rule loads, the neutralized pipeline resolves it correctly.
+  - minimal: 1/1 at 3/3 — component work proceeds with no styling rulebook and no leakage.
+- Measured finding (honestly narrowed claim): `rule:forms` has zero observed firings — path rules
+  inject on READ, so the tripwire covers edits of existing form files, not first creation; the
+  ContactForm-creation prompt still loaded `frontend-security` 3/3 via load-first + cross-pointer.
+
+### Changed
+- `new-component` / `react-patterns` / `design-system` neutralized to "the active styling skill",
+  with an explicit minimal-profile fallback (follow the Stack styling line).
+- `templates/github/workflows/ci.yml`: all actions now SHA-pinned (checkout v6.0.3 peeled commit,
+  setup-node v6.4.0, gitleaks-action v2.3.9) — the template now practices the governance it
+  preaches.
+- Grader-condition fixes: eval report scope line computed from in-scope count (was unfiltered
+  total); provenance notes made symmetric; EVALUATION.md carries v3.0.0 results with v2.0.0 kept
+  as reference.
+
 ## [2.1.0] - 2026-07-02
 
 Adopts the valid findings from an independent external review (ChatGPT, 89/100). Each claim was

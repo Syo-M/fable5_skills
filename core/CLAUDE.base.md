@@ -10,7 +10,7 @@ Frontend project. Detailed conventions live in `.claude/skills/` and load on dem
 - TypeScript **strict mode**.
 - Framework — decide from `package.json` dependencies with this precedence: `next` present → `nextjs` skill; `astro` present → `astro` skill (even though React/Vite also appear there); neither → standalone Vite + React SPA → `vite-react` skill.
 - Package manager: detect from the lockfile (`package-lock.json` / `pnpm-lock.yaml` / `yarn.lock` / `bun.lock` / `bun.lockb`) and use only that one — never hardcode `npm` commands in a pnpm/yarn/bun repo.
-- Styling: **CSS Modules** (`*.module.css`). No inline styles, no CSS-in-JS, no utility-class frameworks. Sole exception: Astro single-file scoped `<style>` per the `astro` skill.
+<!-- @profile:stack-styling -->
 - Tests by layer: pure logic → **Vitest** unit tests; component behavior → **Storybook play functions** (run as tests via the Storybook Vitest addon); user journeys → **Playwright** E2E. Do not write a plain Vitest component test for behavior a story should own. Visual appearance → VRT over stories (`visual-regression`); never screenshot what a DOM assertion can check.
 
 ## Non-negotiables
@@ -56,7 +56,7 @@ frontmatter `description` — when a skill fails to fire, widen its `description
 | Next.js routing, RSC, Server Actions, caching | `nextjs` |
 | Standalone Vite SPA setup / config | `vite-react` |
 | Astro pages, islands, content collections | `astro` |
-| Styles, design tokens, responsive | `css-modules` |
+<!-- @profile:skill-rows -->
 | Shared UI components, tokens/typography/icons, Figma implementation | `design-system` |
 | Animations, transitions, motion | `motion` |
 | Images, fonts, video, LCP/CLS optimization | `images-media` |

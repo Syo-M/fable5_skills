@@ -1,8 +1,11 @@
 {
   "$comment": "Golden prompts for trigger evaluation. Scoring: PASS = every skills_all present, ≥1 of each non-empty *_any group observed, nothing in forbid observed. Fixture project is a Vite+React SPA (see fixtures/).",
   "prompts": [
-    { "id": "css-style-jp", "lang": "ja", "prompt": "src/components/Button.tsx のボタンの見た目を整えて、ホバー時のスタイルも追加して", "skills_any": ["css-modules"], "rules_any": ["styling"] },
-    { "id": "css-darkmode-jp", "lang": "ja", "prompt": "ダークモード対応したい", "skills_any": ["css-modules", "design-system"] },
+    { "id": "css-style-jp", "lang": "ja", "prompt": "src/components/Button.tsx のボタンの見た目を整えて、ホバー時のスタイルも追加して", "skills_any": ["css-modules"], "rules_any": ["styling"], "styling_profile": "css-modules" },
+    { "id": "css-darkmode-jp", "lang": "ja", "prompt": "ダークモード対応したい", "skills_any": ["css-modules", "design-system"], "styling_profile": "css-modules" },
+    { "id": "css-style-tw-jp", "lang": "ja", "prompt": "src/components/Button.tsx のボタンの見た目を整えて、ホバー時のスタイルも追加して", "skills_any": ["tailwind"], "styling_profile": "tailwind" },
+    { "id": "css-darkmode-tw-jp", "lang": "ja", "prompt": "ダークモード対応したい", "skills_any": ["tailwind", "design-system"], "styling_profile": "tailwind" },
+    { "id": "css-tokens-tw-jp", "lang": "ja", "prompt": "ブランドカラーを変えたいので色のトークンを整理して", "skills_any": ["tailwind", "design-system"], "styling_profile": "tailwind" },
     { "id": "security-form-jp", "lang": "ja", "prompt": "問い合わせフォームを作って。名前とメールと本文を送信できるように", "skills_any": ["frontend-security"], "skills_all": [] },
     { "id": "security-review-jp", "lang": "ja", "prompt": "src/api/users/route.ts のセキュリティチェックして", "agents_any": ["security-reviewer"] },
     { "id": "security-review-en", "lang": "en", "prompt": "Is src/api/users/route.ts secure? Review it.", "agents_any": ["security-reviewer"] },
@@ -29,6 +32,8 @@
     { "id": "negative-nextjs-jp", "lang": "ja", "prompt": "このプロジェクトのルーティングを整理したい", "forbid_skills": ["nextjs", "astro"], "notes": "Vite fixture: framework precedence must NOT load nextjs/astro" },
     { "id": "overtrigger-readme-jp", "lang": "ja", "prompt": "README.mdの誤字を直して:「コンポーンネント」を「コンポーネント」に", "forbid_all": true, "notes": "doc typo — the load-first directive covers code; NOTHING should load" },
     { "id": "overtrigger-gitignore-jp", "lang": "ja", "prompt": ".gitignoreにdist/を追加して", "forbid_all": true, "notes": "config line-add matching no skill row — nothing should load" },
-    { "id": "overtrigger-question-en", "lang": "en", "prompt": "What package manager does this project use? Just answer, don't change anything.", "forbid_all": true, "notes": "pure question — nothing should load" }
+    { "id": "overtrigger-question-en", "lang": "en", "prompt": "What package manager does this project use? Just answer, don't change anything.", "forbid_all": true, "notes": "pure question — nothing should load" },
+    { "id": "form-tripwire-jp", "lang": "ja", "prompt": "src/components/ContactForm.tsx を新規作成して、名前とメールと本文を送信できる問い合わせフォームにして", "skills_any": ["frontend-security"], "rules_any": ["forms"], "any_group_mode": "either", "notes": "names a *Form.tsx file — measures the forms.md tripwire firing on write" },
+    { "id": "minimal-style-jp", "lang": "ja", "prompt": "src/components/Button.tsx のボタンの見た目を整えて、ホバー時のスタイルも追加して", "skills_any": ["react-patterns"], "forbid_skills": ["css-modules", "tailwind"], "styling_profile": "minimal", "notes": "minimal profile: component work proceeds with NO styling rulebook loaded" }
   ]
 }

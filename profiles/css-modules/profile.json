@@ -1,0 +1,7 @@
+{
+  "name": "css-modules",
+  "description": "Default styling profile: CSS Modules + design tokens (the repo root ships this profile).",
+  "styling_skill": "css-modules",
+  "excludes": { "skills": [], "rules": [], "templates": [] },
+  "adds": { "skills": [], "rules": [] }
+}

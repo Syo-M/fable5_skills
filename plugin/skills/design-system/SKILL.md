@@ -7,7 +7,7 @@ description: Design system and visual consistency — token tiers, typography, i
 
 ## Token tiers — extend the scale, never bypass it
 
-Builds on the `css-modules` token rules. Structure tokens in tiers inside `tokens.css`:
+Builds on the active styling skill's token rules (`css-modules`: `tokens.css`; `tailwind`: the `@theme` block — both compile to CSS custom properties; no styling skill installed → keep tokens wherever the project already defines them). Structure tokens in tiers:
 
 1. **Primitive**: raw values, never used directly in components (`--blue-600`, `--size-4`).
 2. **Semantic**: meaning-bearing aliases components consume (`--color-action`, `--color-text-muted`, `--space-inline-md`).
@@ -30,7 +30,7 @@ Builds on the `css-modules` token rules. Structure tokens in tiers inside `token
 ## Shared component API
 
 - Consistent vocabulary across all components: the same variant names (`variant`, `size` with the same scale `sm/md/lg`) mean the same thing everywhere. Don't invent `kind`/`appearance`/`type` synonyms per component.
-- Shared components accept `className` (merged onto the root via the `clsx` pattern in `css-modules`) and forward `ref`; spread remaining valid DOM props onto the root element so consumers can set `data-*`/`aria-*`.
+- Shared components accept `className` (merged onto the root with `clsx`) and forward `ref`; spread remaining valid DOM props onto the root element so consumers can set `data-*`/`aria-*`.
 - Inputs ship controlled AND uncontrolled support where native inputs do; document which.
 - Every shared component has stories for all visual states (see `storybook`) — the catalog IS the design-system documentation.
 

@@ -1,0 +1,1 @@
+- Styling: no mandated system — follow the project's existing styling approach CONSISTENTLY (do not introduce a second one). No inline styles on shared/reusable components.

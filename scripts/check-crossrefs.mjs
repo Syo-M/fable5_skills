@@ -43,7 +43,7 @@ const walk = (dir) => {
 };
 walk(root);
 
-const PATH_RE = /(?:^|[\s(`「])((?:\.claude|templates|scripts)\/[\w.\/-]*[\w\/])/g;
+const PATH_RE = /(?:^|[\s(`「])((?:\.claude|templates|scripts|profiles|core)\/[\w.\/-]*[\w\/])/g;
 // Paths documentation cites as ANTI-examples ("don't create this") — must not exist.
 const ANTI_EXAMPLES = new Set(['.claude/.claude']);
 // Artifacts created at install/run time (installer stamps, CLI-managed memory dirs) — not repo files.
