@@ -16,8 +16,9 @@ export const SENSITIVE = [
   // Privileged agent instructions
   /(^|\/)\.claude\//,
   /(^|\/)CLAUDE\.md$/,
-  // Auth / session / payment code
-  /(^|\/)(auth|oauth|sessions?|login|payments?|billing)(\/|\.)/i,
+  // Auth / session / payment code. Suffix set is explicit (not \w*) so `author`
+  // stays a non-match; `-` in the terminator catches auth-service/, sign-in.ts etc.
+  /(^|\/)(auth(entication|orization|[nz])?|oauth2?|sessions?|login|sign-?in|payments?|billing)(\/|\.|-)/i,
   // Lockfiles (lockfile-only changes are a supply-chain red flag)
   /(^|\/)(package-lock\.json|pnpm-lock\.yaml|bun\.lock|bun\.lockb|yarn\.lock)$/,
 ];

@@ -9,6 +9,10 @@ paths:
   - "**/middleware.*"
   - "**/webhooks/**"
   - "**/auth/**"
+  - "**/oauth/**"
+  - "**/oauth2/**"
+  - "**/sessions/**"
+  - "**/login/**"
   - "**/payments/**"
   - "**/billing/**"
 ---

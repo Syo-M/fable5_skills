@@ -4,6 +4,41 @@ All notable changes to this rules repository are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/) in reverse-chronological order; this
 repo is versioned so consuming projects can pin a tag and audits can tell which rules governed which commits.
 
+## [1.9.1] - 2026-07-02
+
+Convergent fixes from the formal 3-persona scoring of v1.9.0 (Engineer 88.1 / Security 89.4 /
+LLM 89.3, avg 88.9 — recorded in README「品質評価」). All three graders independently ruled
+AGAINST cutting 2.0.0 now: MAINTENANCE.md's own `--runs 3` pre-MAJOR gate is unexecuted and the
+additions are semantically MINOR. 2.0.0 is deferred until that protocol is satisfied.
+
+### Fixed
+- **Security (live dual-layer bypass)**: `oauth2/`, `authentication.ts`, `auth-service/`,
+  `sign-in.tsx` slipped the sensitive-path regex AND the server-boundaries rule globs. Regex
+  rebuilt with an explicit suffix set (still excludes `author`), rule gains
+  `**/oauth/**`/`**/oauth2/**`/`**/sessions/**`/`**/login/**`, fixtures added to both test
+  suites and `check-sync.mjs` (now 25+24 hook cases, 24 must-ask fixtures).
+- `sensitive-bash.mjs`: `dd of=…` added to write indicators (was a plain-write omission, not
+  obfuscation).
+- **Eval reporting rigor** (the LLM grader's recurrence of the overclaim class): summary now
+  states 16/20 post-fix-measured vs 22/26 incl.-baseline precisely, discloses the three
+  valid-region PASS→FAIL reversals, and the 1.9.0 CHANGELOG wording is corrected; provenance
+  notes added to the two reports whose in-file headers stamped the pre-tag version.
+- `run-eval.mjs`: run-validity guard — a CLI invocation that exits non-zero or returns no result
+  JSON is excluded (NO-DATA) instead of scoring as forbid-PASS/positive-FAIL (the coded version
+  of the run-3 lesson); reports now stamp "rules under test: <describe> (working tree)".
+- `eval/README.md`: corrected the hook-wiring description (PermissionDenied/PostToolUseFailure
+  are deliberately NOT wired — the 2.1.87 gotcha), added the headless-credentials security note,
+  and a Backlog section so known trigger gaps have a home.
+- `install.sh`: proper flag parsing — `--force` works in any position; unknown flags error
+  instead of silently degrading to skip-mode.
+- `frontend-security` description: anchors for the persistently-missing form prompt
+  (「問い合わせ/お問い合わせフォーム」「送信フォーム」).
+- README: stale 「約60行」 claim (CLAUDE.md is 74 lines) → 「1画面程度(80行未満)」.
+
+### Changed
+- `verify.yml`: action pin comments now name exact versions (v4.3.1 / v4.4.0 — verified current;
+  a grader's "stale pin" claim was itself checked and found wrong); `pyyaml` pinned to 6.0.3.
+
 ## [1.9.0] - 2026-07-02
 
 ### Added
@@ -16,7 +51,8 @@ repo is versioned so consuming projects can pin a tag and audits can tell which 
 - First measured trigger-reliability results (consolidated in `eval/reports/v1.9.0-summary.md`):
   baseline 12/26 → root cause identified (model skips loading rulebook skills for directly-doable
   work; anchors were NOT the problem) → fix → 9/14 prior failures flipped; 22/26 prompts have
-  observed activation post-fix; 4 persistent stochastic misses documented as known gaps.
+  observed activation across all valid measurements incl. the baseline (16/20 of the post-fix-
+  measured prompts — wording corrected in 1.9.1); 4 persistent stochastic misses documented.
   Layer reliability: agents > path rules > procedure skills > domain-rulebook skills.
 
 ### Changed

@@ -44,7 +44,8 @@ const FIXTURES = [
   'vercel.json', 'netlify.toml',
   '.claude/settings.json', '.claude/skills/x/SKILL.md', 'CLAUDE.md',
   'package-lock.json', 'pnpm-lock.yaml', 'bun.lock', 'bun.lockb', 'yarn.lock',
-  'src/auth/login.ts', 'src/oauth/callback.ts', 'src/lib/session.ts',
+  'src/auth/login.ts', 'src/oauth/callback.ts', 'src/oauth2/client.ts',
+  'src/lib/authentication.ts', 'src/lib/session.ts',
   'src/payments/charge.ts', 'src/billing/invoice.ts',
   // non-sensitive controls
   'src/components/Button.tsx', 'src/pages/author/index.tsx', 'src/authors.ts',
@@ -57,8 +58,8 @@ for (const p of FIXTURES) {
 }
 
 // (2) canonical expectations for the hook (must-ask / must-allow)
-const MUST_ASK = FIXTURES.slice(0, 22); // everything above the controls
-const MUST_ALLOW = FIXTURES.slice(22);
+const MUST_ASK = FIXTURES.slice(0, 24); // everything above the controls
+const MUST_ALLOW = FIXTURES.slice(24);
 for (const p of MUST_ASK) if (!hookHit(p)) fail(`hook must cover "${p}" but does not`);
 for (const p of MUST_ALLOW) if (hookHit(p)) fail(`hook must NOT cover "${p}" (false positive)`);
 

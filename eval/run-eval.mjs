@@ -83,7 +83,12 @@ function runOnce(prompt) {
       } catch { /* skip bad line */ }
     }
   }
-  return { observed, model, timedOut: res.error?.code === 'ETIMEDOUT', exit: res.status };
+  // Run-validity guard (lesson from the invalidated run-3 tail): a failed CLI
+  // invocation produces zero events, which would score as forbid-PASS /
+  // positive-FAIL. A run counts ONLY if the CLI exited 0 and returned a result.
+  const valid =
+    res.status === 0 && !res.error && typeof res.stdout === 'string' && res.stdout.includes('"result"');
+  return { observed, model, valid, timedOut: res.error?.code === 'ETIMEDOUT', exit: res.status };
 }
 
 // ---- scoring ----
@@ -108,23 +113,30 @@ const rows = [];
 let model = null;
 for (const p of selected) {
   let passes = 0;
+  let validRuns = 0;
   const union = { skills: new Set(), agents: new Set(), rules: new Set() };
   let notes = [];
   for (let i = 0; i < RUNS; i++) {
     const r = runOnce(p.prompt);
     model ??= r.model;
-    if (r.timedOut) { notes.push('timeout'); continue; }
+    if (!r.valid) {
+      notes.push(r.timedOut ? 'timeout (run excluded)' : `invalid run (exit ${r.exit}, excluded)`);
+      continue;
+    }
+    validRuns++;
     for (const k of ['skills', 'agents', 'rules']) r.observed[k].forEach((v) => union[k].add(v));
     const s = score(p, r.observed);
     if (s.pass) passes++;
     else if (s.why) notes.push(s.why);
   }
-  const rate = `${passes}/${RUNS}`;
-  rows.push({ ...p, rate, passes, union, notes: [...new Set(notes)].join('; ') });
-  console.log(`${passes === RUNS ? 'PASS' : passes > 0 ? 'FLAKY' : 'FAIL'}  ${p.id}  ${rate}  [skills: ${[...union.skills].join(',') || '-'}] [agents: ${[...union.agents].join(',') || '-'}] [rules: ${[...union.rules].join(',') || '-'}]${rows.at(-1).notes ? '  (' + rows.at(-1).notes + ')' : ''}`);
+  const rate = `${passes}/${validRuns}`;
+  rows.push({ ...p, rate, passes, validRuns, union, notes: [...new Set(notes)].join('; ') });
+  const label = validRuns === 0 ? 'NO-DATA' : passes === validRuns ? 'PASS' : passes > 0 ? 'FLAKY' : 'FAIL';
+  console.log(`${label}  ${p.id}  ${rate}  [skills: ${[...union.skills].join(',') || '-'}] [agents: ${[...union.agents].join(',') || '-'}] [rules: ${[...union.rules].join(',') || '-'}]${rows.at(-1).notes ? '  (' + rows.at(-1).notes + ')' : ''}`);
 }
 
-const passCount = rows.filter((r) => r.passes === RUNS).length;
+const passCount = rows.filter((r) => r.validRuns > 0 && r.passes === r.validRuns).length;
+const noData = rows.filter((r) => r.validRuns === 0).length;
 const version = execFileSync('git', ['-C', root, 'describe', '--tags', '--always'], { encoding: 'utf8' }).trim();
 
 // ---- report ----
@@ -134,10 +146,10 @@ let reportPath = join(here, 'reports', `${version}-${RUNS}runs.md`);
 for (let n = 2; existsSync(reportPath); n++) {
   reportPath = join(here, 'reports', `${version}-${RUNS}runs-${n}.md`);
 }
-writeFileSync(reportPath, `# Trigger evaluation — ${version} (${RUNS} run(s)/prompt)
+writeFileSync(reportPath, `# Trigger evaluation — rules under test: ${version} (working tree; ${RUNS} run(s)/prompt)
 
 - Model: ${model ?? 'unknown'} · max-turns ${MAX_TURNS} · fixture: Vite+React SPA
-- Result: **${passCount}/${rows.length} prompts fully passed** (${rows.filter((r) => r.passes > 0 && r.passes < RUNS).length} flaky, ${rows.filter((r) => r.passes === 0).length} failed)
+- Result: **${passCount}/${rows.length} prompts fully passed** (${rows.filter((r) => r.validRuns > 0 && r.passes > 0 && r.passes < r.validRuns).length} flaky, ${rows.filter((r) => r.validRuns > 0 && r.passes === 0).length} failed${noData ? `, ${noData} NO-DATA (all runs invalid — excluded, not failed)` : ''})
 - Method: headless \`claude -p\` in a disposable project installed via install.sh; activations measured
   by hooks (PostToolUse Skill/Task, SubagentStart, InstructionsLoaded) — observed, not self-reported.
 - Caveat: ${RUNS < 3 ? 'run count below release-grade (use --runs 3); treat rates as first signal.' : 'release-grade run count.'}

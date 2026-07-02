@@ -17,6 +17,8 @@ const CASES = [
   ['mv over CLAUDE.md', 'mv /tmp/x CLAUDE.md', true],
   ['rm middleware', 'rm src/middleware.ts', true],
   ['chmod on payments module', 'chmod 600 src/payments/charge.ts', true],
+  ['dd onto lockfile', 'dd if=/dev/zero of=package-lock.json bs=1 count=1', true],
+  ['sed -i into oauth2 dir', "sed -i 's/a/b/' src/oauth2/client.ts", true],
   // package-manager mutations → ask (even without a sensitive token)
   ['npm install package', 'npm install lodash', true],
   ['pnpm add', 'pnpm add -D vitest', true],

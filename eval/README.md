@@ -9,10 +9,12 @@ do representative user prompts actually activate the intended skill / agent / ru
 1. `run-eval.mjs` builds a disposable Vite+React fixture project and installs the rules into it
    via `install.sh` (so the eval exercises the real install path too).
 2. It wires `log-event.mjs` into the project's hooks: `PreToolUse`/`PostToolUse` (matcher
-   `Skill|Task|Agent`), `SubagentStart`, `InstructionsLoaded`, plus `PermissionDenied`/
-   `PostToolUseFailure` for diagnosis. Every activation is appended to `.eval-log.jsonl` by the
-   harness itself — the model cannot fake or forget it. **Activation = invoked or attempted**
-   (a PreToolUse attempt proves the trigger fired even if headless permissions then block it).
+   `Skill|Task|Agent`), `SubagentStart`, and `InstructionsLoaded` — deliberately NOTHING else:
+   an event name the installed CLI doesn't know silently disables the whole settings file
+   (verified on 2.1.87 with `PermissionDenied`/`PostToolUseFailure`). Every activation is appended
+   to `.eval-log.jsonl` by the harness itself — the model cannot fake or forget it.
+   **Activation = invoked or attempted** (a PreToolUse attempt proves the trigger fired even if
+   headless permissions then block it).
 3. Each prompt in `golden-prompts.json` runs headless (`claude -p … --max-turns 3`); the log is
    scored against the prompt's expectations.
 
@@ -36,6 +38,20 @@ node eval/run-eval.mjs --only dep-vet-jp,preship-jp --keep   # debug specific pr
 This is a RELEASE-TIME protocol, not a per-commit CI gate — trigger behavior is stochastic, so a
 single-run red would make CI flaky. Reports land in `eval/reports/` and are committed as
 measurement records (see `MAINTENANCE.md` release checklist).
+
+**Security note**: the harness spawns a headless agent with your credentials, inherited
+environment, and tool execution in the fixture project. Prompts and fixtures are repo-controlled;
+still, treat `run-eval.mjs` changes as sensitive (the `.claude/**` sign-off flow applies to the
+projects it writes into, and long series can hit usage limits — see run-validity below).
+
+## Backlog (known gaps, tracked here)
+
+- Persistent misses from v1.9.0: `security-form-jp`, `chart-jp`, `chart-en`, `react-state-jp` —
+  next lever is description tuning + a `--runs 3` rate measurement.
+- Over-trigger metric: negative prompts asserting NOTHING should load on trivial mechanical edits
+  (the counterweight to CLAUDE.md's load-first directive) — currently unmeasured.
+- Next.js / Astro fixture projects so framework precedence is tested positively, not only via the
+  one `forbid` prompt.
 
 ## Interpreting failures
 

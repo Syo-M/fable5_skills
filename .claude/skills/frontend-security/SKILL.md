@@ -1,6 +1,6 @@
 ---
 name: frontend-security
-description: Frontend security rules — XSS, injection, validation, CSRF, SSRF, CORS, secrets, sessions/JWT, rate limiting, headers, uploads, third-party scripts, prompt injection, dependency hygiene. Use whenever code touches user input, HTML rendering, auth, cookies, URLs, outbound fetch, webhooks, env vars, file uploads, logging, untrusted content fed to an LLM, or new dependencies. 日本語の依頼例:「認証/ログイン実装」「入力フォーム作って」「cookie/セッション」「外部APIを叩いて」「webhook受信」「ファイルアップロード」「環境変数」「依存パッケージ追加」「LLMに渡す」。
+description: Frontend security rules — XSS, injection, validation, CSRF, SSRF, CORS, secrets, sessions/JWT, rate limiting, headers, uploads, third-party scripts, prompt injection, dependency hygiene. Use whenever code touches user input, HTML rendering, auth, cookies, URLs, outbound fetch, webhooks, env vars, file uploads, logging, untrusted content fed to an LLM, or new dependencies. 日本語の依頼例:「認証/ログイン実装」「入力フォーム作って」「問い合わせ/お問い合わせフォーム作って」「送信フォーム」「cookie/セッション」「外部APIを叩いて」「webhook受信」「ファイルアップロード」「環境変数」「依存パッケージ追加」「LLMに渡す」。
 ---
 
 # Frontend Security

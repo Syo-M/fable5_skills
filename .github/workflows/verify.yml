@@ -20,8 +20,8 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
 
@@ -48,7 +48,7 @@ jobs:
         run: node scripts/build-plugin.mjs --check
 
       # Frontmatter validity (skills/agents/rules/output-styles)
-      - name: Install PyYAML
-        run: python3 -m pip install --quiet pyyaml
+      - name: Install PyYAML (pinned)
+        run: python3 -m pip install --quiet pyyaml==6.0.3
       - name: Frontmatter valid and complete
         run: python3 scripts/check_frontmatter.py

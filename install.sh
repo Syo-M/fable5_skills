@@ -18,8 +18,17 @@
 set -euo pipefail
 
 SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-TARGET="${1:-}"
-FORCE="${2:-}"
+TARGET=""
+FORCE=""
+for arg in "$@"; do
+  case "$arg" in
+    --force) FORCE="--force" ;;
+    -*) echo "error: unknown flag '$arg' (only --force is supported)" >&2; exit 1 ;;
+    *)
+      if [[ -n "$TARGET" ]]; then echo "error: multiple targets given ('$TARGET', '$arg')" >&2; exit 1; fi
+      TARGET="$arg" ;;
+  esac
+done
 
 if [[ -z "$TARGET" || ! -d "$TARGET" ]]; then
   echo "usage: ./install.sh /path/to/your-project [--force]" >&2
