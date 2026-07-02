@@ -1,6 +1,6 @@
 ---
 name: data-viz
-description: Charts and data visualization — library choice, chart accessibility, SSR/hydration concerns, dashboard performance, large datasets and data tables. Use when building or fixing charts, graphs, dashboards, KPI displays, or large data tables. 日本語の依頼例:「グラフ/チャートを追加して」「ダッシュボード作って」「データテーブル」「可視化して」「KPI表示」。
+description: Charts and data visualization — library choice, chart accessibility, SSR/hydration concerns, dashboard performance, large datasets and data tables. Use when building or fixing charts, graphs, dashboards, KPI displays, or ANY data table (sortable/filterable/paginated tables of records or metrics included — a table is data viz). 日本語の依頼例:「グラフ/チャートを追加して」「ダッシュボード作って」「データテーブル」「一覧テーブル(ソート/フィルタ付き)」「可視化して」「KPI表示」。
 ---
 
 # Data Visualization

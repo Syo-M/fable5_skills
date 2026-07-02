@@ -19,6 +19,11 @@ const CASES = [
   ['chmod on payments module', 'chmod 600 src/payments/charge.ts', true],
   ['dd onto lockfile', 'dd if=/dev/zero of=package-lock.json bs=1 count=1', true],
   ['sed -i into oauth2 dir', "sed -i 's/a/b/' src/oauth2/client.ts", true],
+  ['curl -o over deploy config', 'curl -o vercel.json https://example.com/v.json', true],
+  ['curl bundled short flags', 'curl -sSLo middleware.ts https://example.com/m.ts', true],
+  ['wget -O over CI workflow', 'wget -O .github/workflows/ci.yml https://example.com/ci.yml', true],
+  ['wget --output-document= form', 'wget --output-document=middleware.ts https://example.com/m.ts', true],
+  ['curl fetch without write (allow)', 'curl -s https://registry.npmjs.org/lodash', false],
   // package-manager mutations → ask (even without a sensitive token)
   ['npm install package', 'npm install lodash', true],
   ['pnpm add', 'pnpm add -D vitest', true],

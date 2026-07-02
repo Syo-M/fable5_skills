@@ -45,11 +45,13 @@ const FIXTURES = [
   '.claude/settings.json', '.claude/skills/x/SKILL.md', 'CLAUDE.md',
   'package-lock.json', 'pnpm-lock.yaml', 'bun.lock', 'bun.lockb', 'yarn.lock',
   'src/auth/login.ts', 'src/oauth/callback.ts', 'src/oauth2/client.ts',
-  'src/lib/authentication.ts', 'src/lib/session.ts',
+  'src/lib/authentication.ts', 'src/lib/session.ts', 'src/signup/form.tsx',
+  'src/lib/jwt.ts', 'src/credentials/store.ts',
   'src/payments/charge.ts', 'src/billing/invoice.ts',
   // non-sensitive controls
   'src/components/Button.tsx', 'src/pages/author/index.tsx', 'src/authors.ts',
-  'src/utils/sessionStorage.ts', 'README.md', 'package.json', 'vitest.config.ts',
+  'src/utils/sessionStorage.ts', 'src/styles/tokens.css', 'README.md',
+  'package.json', 'vitest.config.ts',
 ];
 
 // (1) rule ⊆ hook over the corpus
@@ -58,8 +60,8 @@ for (const p of FIXTURES) {
 }
 
 // (2) canonical expectations for the hook (must-ask / must-allow)
-const MUST_ASK = FIXTURES.slice(0, 24); // everything above the controls
-const MUST_ALLOW = FIXTURES.slice(24);
+const MUST_ASK = FIXTURES.slice(0, 27); // everything above the controls
+const MUST_ALLOW = FIXTURES.slice(27);
 for (const p of MUST_ASK) if (!hookHit(p)) fail(`hook must cover "${p}" but does not`);
 for (const p of MUST_ALLOW) if (hookHit(p)) fail(`hook must NOT cover "${p}" (false positive)`);
 

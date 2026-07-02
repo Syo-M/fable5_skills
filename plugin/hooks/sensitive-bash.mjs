@@ -18,7 +18,7 @@ import { SENSITIVE, REASON_SUFFIX } from './sensitive-list.mjs';
 
 // Commands/patterns that (can) write to files named on the command line.
 const WRITE_INDICATORS =
-  /(^|[\s;|&(])(sed\s+(-\w*\s+)*-i|tee(\s|$)|mv\s|cp\s|rm\s|chmod\s|chown\s|touch\s|truncate\s|ln\s|dd\s|git\s+(apply|restore|checkout\s+--)|patch(\s|$))|>{1,2}|\bdd\s+[^|]*\bof=/;
+  /(^|[\s;|&(])(sed\s+(-\w*\s+)*-i|tee(\s|$)|mv\s|cp\s|rm\s|chmod\s|chown\s|touch\s|truncate\s|ln\s|dd\s|rsync\s|curl\s+[^|]*(-[a-zA-Z]*o|--output)(\s|=)|wget\s+[^|]*(-O|--output-document)(\s|=)|git\s+(apply|restore|checkout\s+--)|patch(\s|$))|>{1,2}|\bdd\s+[^|]*\bof=/;
 
 // Package-manager invocations that mutate the dependency tree / lockfile.
 const PM_MUTATION =
@@ -60,7 +60,13 @@ process.stdin.on('end', () => {
     // Tokenize roughly and test each path-looking token against the canonical list.
     const tokens = cmd
       .split(/[\s;|&()<>]+/)
-      .map((t) => t.replace(/^['"]|['"]$/g, '').replace(/^of=/, '').replace(/^\.\//, ''))
+      .map((t) =>
+        t
+          .replace(/^['"]|['"]$/g, '')
+          .replace(/^--?[\w-]+=/, '') // --output-document=path, of=path style
+          .replace(/^of=/, '')
+          .replace(/^\.\//, ''),
+      )
       .filter(Boolean);
     const hitToken = tokens.find((t) => SENSITIVE.some((re) => re.test(t)));
     if (!hitToken) process.exit(0);

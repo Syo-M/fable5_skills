@@ -4,6 +4,44 @@ All notable changes to this rules repository are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/) in reverse-chronological order; this
 repo is versioned so consuming projects can pin a tag and audits can tell which rules governed which commits.
 
+## [2.0.0] - 2026-07-02
+
+**Measured-milestone MAJOR — no breaking changes.** Cut only after satisfying MAINTENANCE.md's
+own pre-MAJOR gates: the `--runs 3` release-grade trigger evaluation (87/87 valid runs) and the
+3-persona formal scoring. Final measured scores: **Engineer 90.4 / Security 91.5 / LLM 91.3 —
+average 91.1** (each grader re-verified the deltas by execution before re-rating; details in
+README「品質評価」).
+
+### Added
+- **Horizon experiment** (`eval/reports/v2.0.0-horizon-experiment.md`): the falsification test
+  the v1.9.x reports pre-registered. All three former 0/3 "structural" trigger gaps are **3/3 at
+  `--max-turns 6`** (`security-form-jp`→frontend-security, `chart-en`→data-viz,
+  `react-state-jp`→react-patterns, loading at turns 4–6): they were measurement-horizon
+  artifacts, not missing triggers — every golden prompt has demonstrated activation. The
+  conservative 3-turn numbers (23/29 full-pass, 85%/run) remain the headline. Attribution
+  verified clean: the new forms rule fired in zero unions, so the flips are the horizon, not
+  the new rule.
+- `.claude/rules/forms.md` — deterministic path tripwire on form components (`*Form.*`,
+  `*-form.*`, `forms/`; hyphen globs avoid `transform.*`): mandates `frontend-security` +
+  zod-at-boundary + a11y error association at the exact moment user-input code is written,
+  independent of turn horizon.
+- Three over-trigger negative prompts (forbid_all) in the golden set — all 3/3 clean: the
+  load-first directive has NO measured over-loading cost on non-code asks.
+- Eval harness rigor: start-of-series canary, per-run validity guard (non-zero exit / missing
+  result JSON → excluded as NO-DATA, never scored), 3-consecutive-invalid abort, scope stamping
+  (full vs `--only` subset), `git describe --dirty` provenance, forbid_all rendering in reports.
+
+### Fixed (from the final scoring round, verified by the graders)
+- Bash hook: download-write verbs (`curl -o`/`--output` incl. bundled short flags `-sSLo`,
+  `wget -O`/`--output-document` incl. the `=` form, `rsync`) now escalate; tokenizer strips
+  `--flag=` prefixes so `=`-joined paths are inspected. Canonical list gains
+  `signup`/`sign-up`/`jwt`/`credentials` (with a documented `token` exclusion — design-tokens
+  collision). Hook suites now 30 + 29 = 59 cases.
+- Eval reporting precision: subset/full scope stamped; the untraceable "chart-jp 0/3" denominator
+  corrected; agent claim restated as "the 5 agent-only prompts"; like-for-like baseline basis
+  (20/26 = 77%) stated beside the 46% comparison; "signups" removed from the data-viz
+  description (teach-to-the-test); stale hook-test counts in README corrected.
+
 ## [1.9.1] - 2026-07-02
 
 Convergent fixes from the formal 3-persona scoring of v1.9.0 (Engineer 88.1 / Security 89.4 /

@@ -26,6 +26,9 @@
     { "id": "preship-jp", "lang": "ja", "prompt": "出荷前チェックして", "skills_any": ["pre-ship"] },
     { "id": "newcomp-jp", "lang": "ja", "prompt": "新しいCardコンポーネント作って", "skills_any": ["new-component", "react-patterns"] },
     { "id": "react-state-jp", "lang": "ja", "prompt": "再レンダリングが多い気がするので直したい", "skills_any": ["react-patterns"] },
-    { "id": "negative-nextjs-jp", "lang": "ja", "prompt": "このプロジェクトのルーティングを整理したい", "forbid_skills": ["nextjs", "astro"], "notes": "Vite fixture: framework precedence must NOT load nextjs/astro" }
+    { "id": "negative-nextjs-jp", "lang": "ja", "prompt": "このプロジェクトのルーティングを整理したい", "forbid_skills": ["nextjs", "astro"], "notes": "Vite fixture: framework precedence must NOT load nextjs/astro" },
+    { "id": "overtrigger-readme-jp", "lang": "ja", "prompt": "README.mdの誤字を直して:「コンポーンネント」を「コンポーネント」に", "forbid_all": true, "notes": "doc typo — the load-first directive covers code; NOTHING should load" },
+    { "id": "overtrigger-gitignore-jp", "lang": "ja", "prompt": ".gitignoreにdist/を追加して", "forbid_all": true, "notes": "config line-add matching no skill row — nothing should load" },
+    { "id": "overtrigger-question-en", "lang": "en", "prompt": "What package manager does this project use? Just answer, don't change anything.", "forbid_all": true, "notes": "pure question — nothing should load" }
   ]
 }

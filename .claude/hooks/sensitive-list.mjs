@@ -18,7 +18,9 @@ export const SENSITIVE = [
   /(^|\/)CLAUDE\.md$/,
   // Auth / session / payment code. Suffix set is explicit (not \w*) so `author`
   // stays a non-match; `-` in the terminator catches auth-service/, sign-in.ts etc.
-  /(^|\/)(auth(entication|orization|[nz])?|oauth2?|sessions?|login|sign-?in|payments?|billing)(\/|\.|-)/i,
+  // Deliberately absent: `token` (collides with design tokens — tokens.css/tokens.ts
+  // are styling, not auth); jwt/credentials cover the auth-token file names instead.
+  /(^|\/)(auth(entication|orization|[nz])?|oauth2?|sessions?|login|sign-?(in|up)|signup|payments?|billing|jwt|credentials?)(\/|\.|-)/i,
   // Lockfiles (lockfile-only changes are a supply-chain red flag)
   /(^|\/)(package-lock\.json|pnpm-lock\.yaml|bun\.lock|bun\.lockb|yarn\.lock)$/,
 ];

@@ -94,6 +94,14 @@ function runOnce(prompt) {
 // ---- scoring ----
 function score(p, obs) {
   const has = (set, xs) => xs.some((x) => set.has(x));
+  // over-trigger negative: NOTHING (no skill, no agent) may load — path rules exempt,
+  // they are read-triggered and cost little. Counterweight to the load-first directive.
+  if (p.forbid_all) {
+    const fired = [...obs.skills, ...[...obs.agents].map((a) => `@${a}`)];
+    return fired.length
+      ? { pass: false, why: `over-trigger: ${fired.join(',')}` }
+      : { pass: true, why: '' };
+  }
   const forbidHit = (p.forbid_skills ?? []).filter((x) => obs.skills.has(x));
   if (forbidHit.length) return { pass: false, why: `forbidden fired: ${forbidHit.join(',')}` };
   const allOk = (p.skills_all ?? []).every((x) => obs.skills.has(x));
@@ -108,9 +116,25 @@ function score(p, obs) {
 
 // ---- main ----
 setup();
+
+// Canary: prove the environment is alive before burning the series. If a
+// known-reliable prompt yields an invalid run or zero events, the harness or
+// account (usage limits) is dead — abort instead of producing NO-DATA rows.
+function canaryCheck(label) {
+  const c = runOnce('セキュリティチェックして: src/api/users/route.ts');
+  const alive = c.valid && (c.observed.skills.size + c.observed.agents.size + c.observed.rules.size) > 0;
+  if (!alive) {
+    console.error(`CANARY DEAD (${label}): exit ${c.exit}, ${c.valid ? 'zero events' : 'invalid run'} — environment/usage-limit failure; aborting series.`);
+    process.exit(2);
+  }
+  console.log(`canary OK (${label})`);
+}
+canaryCheck('series start');
+
 console.log(`evaluating ${selected.length} prompts × ${RUNS} run(s) in ${WORKDIR}\n`);
 const rows = [];
 let model = null;
+let consecutiveInvalid = 0;
 for (const p of selected) {
   let passes = 0;
   let validRuns = 0;
@@ -121,8 +145,13 @@ for (const p of selected) {
     model ??= r.model;
     if (!r.valid) {
       notes.push(r.timedOut ? 'timeout (run excluded)' : `invalid run (exit ${r.exit}, excluded)`);
+      if (++consecutiveInvalid >= 3) {
+        console.error('3 consecutive invalid runs — environment/usage-limit death; aborting series (partial results NOT written).');
+        process.exit(2);
+      }
       continue;
     }
+    consecutiveInvalid = 0;
     validRuns++;
     for (const k of ['skills', 'agents', 'rules']) r.observed[k].forEach((v) => union[k].add(v));
     const s = score(p, r.observed);
@@ -137,7 +166,10 @@ for (const p of selected) {
 
 const passCount = rows.filter((r) => r.validRuns > 0 && r.passes === r.validRuns).length;
 const noData = rows.filter((r) => r.validRuns === 0).length;
-const version = execFileSync('git', ['-C', root, 'describe', '--tags', '--always'], { encoding: 'utf8' }).trim();
+const version = execFileSync('git', ['-C', root, 'describe', '--tags', '--always', '--dirty'], { encoding: 'utf8' }).trim();
+const scope = ONLY.length
+  ? `SUBSET run (--only ${ONLY.join(',')}): ${selected.length} of ${prompts.length} prompts — NOT a full-series result`
+  : `full series: all ${prompts.length} prompts`;
 
 // ---- report ----
 mkdirSync(join(here, 'reports'), { recursive: true });
@@ -148,11 +180,12 @@ for (let n = 2; existsSync(reportPath); n++) {
 }
 writeFileSync(reportPath, `# Trigger evaluation — rules under test: ${version} (working tree; ${RUNS} run(s)/prompt)
 
+- Scope: ${scope}
 - Model: ${model ?? 'unknown'} · max-turns ${MAX_TURNS} · fixture: Vite+React SPA
 - Result: **${passCount}/${rows.length} prompts fully passed** (${rows.filter((r) => r.validRuns > 0 && r.passes > 0 && r.passes < r.validRuns).length} flaky, ${rows.filter((r) => r.validRuns > 0 && r.passes === 0).length} failed${noData ? `, ${noData} NO-DATA (all runs invalid — excluded, not failed)` : ''})
 - Method: headless \`claude -p\` in a disposable project installed via install.sh; activations measured
   by hooks (PostToolUse Skill/Task, SubagentStart, InstructionsLoaded) — observed, not self-reported.
-- Caveat: ${RUNS < 3 ? 'run count below release-grade (use --runs 3); treat rates as first signal.' : 'release-grade run count.'}
+- Run count: ${RUNS < 3 ? `${RUNS} (below release-grade — use --runs 3; treat rates as first signal)` : `${RUNS} (release-grade)`}
 
 | id | lang | rate | expected | observed (union) | notes |
 |---|---|---|---|---|---|
@@ -161,6 +194,7 @@ ${rows.map((r) => `| ${r.id} | ${r.lang ?? ''} | ${r.rate} | ${[
   r.agents_any?.length ? `agents:${r.agents_any.join('/')}` : '',
   r.rules_any?.length ? `rules:${r.rules_any.join('/')}` : '',
   r.forbid_skills?.length ? `forbid:${r.forbid_skills.join('/')}` : '',
+  r.forbid_all ? 'forbid:EVERYTHING (over-trigger negative)' : '',
 ].filter(Boolean).join(' ')} | ${[...r.union.skills, ...[...r.union.agents].map((a) => `@${a}`), ...[...r.union.rules].map((x) => `rule:${x}`)].join(', ') || '-'} | ${r.notes} |`).join('\n')}
 `);
 console.log(`\n${passCount}/${rows.length} passed — report: ${reportPath.slice(root.length + 1)}`);

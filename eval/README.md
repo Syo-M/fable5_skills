@@ -25,6 +25,10 @@ do representative user prompts actually activate the intended skill / agent / ru
   (all groups, unless `any_group_mode: "either"` — then any one group satisfying passes,
   used where skill-vs-agent routing is legitimately either/or).
 - `forbid_skills` — negative expectation (e.g. `nextjs` must NOT fire in the Vite fixture).
+- `forbid_all` — over-trigger negative: NO skill and NO agent may load (doc typos, config
+  line-adds, pure questions). This is the counterweight to CLAUDE.md's load-first directive —
+  it measures whether "always load the rulebook" degrades into "load something for everything".
+  Path rules are exempt (read-triggered, cheap).
 
 ## Running
 
@@ -46,12 +50,15 @@ projects it writes into, and long series can hit usage limits — see run-validi
 
 ## Backlog (known gaps, tracked here)
 
-- Persistent misses from v1.9.0: `security-form-jp`, `chart-jp`, `chart-en`, `react-state-jp` —
-  next lever is description tuning + a `--runs 3` rate measurement.
-- Over-trigger metric: negative prompts asserting NOTHING should load on trivial mechanical edits
-  (the counterweight to CLAUDE.md's load-first directive) — currently unmeasured.
 - Next.js / Astro fixture projects so framework precedence is tested positively, not only via the
   one `forbid` prompt.
+- Re-test the 3 flaky prompts (`tests-component-jp` 2/3, `chart-jp` 2/3, `motion-jp` 1/3) at
+  `--max-turns 6` — the horizon finding below predicts they rate higher too.
+- DONE (v2.0.0): over-trigger negatives — 3 prompts, all 3/3 clean; the load-first directive has
+  no measured over-loading cost.
+- DONE (v2.0.0): max-turns sensitivity experiment — the 3 former 0/3 "structural" gaps are ALL
+  3/3 at `--max-turns 6` (reports/v2.0.0-horizon-experiment.md): they were measurement-horizon
+  artifacts, not missing triggers. Every golden prompt has demonstrated activation.
 
 ## Interpreting failures
 
