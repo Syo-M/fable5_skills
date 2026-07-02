@@ -75,6 +75,11 @@ for (const s of p.excludes.skills) out.push('.claude/skills/'+s);
 for (const r of p.excludes.rules) out.push('.claude/rules/'+r);
 console.log(out.join('\n'));
 ")"
+# templates are opt-in manual copies — surface the profile's exclusions as guidance
+TEMPLATE_EXCLUDES="$(node -e "
+const p=require('$PROFILE_DIR/profile.json');
+console.log((p.excludes.templates||[]).join(', '));
+")"
 is_excluded() {
   local rel="$1"
   while IFS= read -r ex; do
@@ -207,14 +212,40 @@ for line in '.claude/settings.local.json' '.claude/agent-memory-local/'; do
   fi
 done
 
-# version stamp for auditability
+# version stamp for auditability — records SYNC STATE, not just the source version:
+# a stamp alone must never imply "fully synchronized" when files were skipped or are missing.
 if [[ -z "$DRYRUN" ]]; then
+  s_ident=0; s_diff=0; s_miss=0
+  while IFS= read -r -d '' f; do
+    rel="${f#$SRC/}"
+    is_excluded "$rel" && continue
+    if [[ ! -e "$TARGET/$rel" ]]; then s_miss=$((s_miss + 1));
+    elif cmp -s "$f" "$TARGET/$rel"; then s_ident=$((s_ident + 1));
+    else s_diff=$((s_diff + 1)); fi
+  done < <(find "$SRC/.claude/skills" "$SRC/.claude/rules" "$SRC/.claude/agents" "$SRC/.claude/hooks" \
+                "$SRC/.claude/output-styles" "$SRC/.claude/workflows" -type f -print0 2>/dev/null)
+  for kind in skills rules; do
+    [[ -d "$PROFILE_DIR/$kind" ]] || continue
+    while IFS= read -r -d '' f; do
+      rel=".claude/$kind/${f#$PROFILE_DIR/$kind/}"
+      if [[ ! -e "$TARGET/$rel" ]]; then s_miss=$((s_miss + 1));
+      elif cmp -s "$f" "$TARGET/$rel"; then s_ident=$((s_ident + 1));
+      else s_diff=$((s_diff + 1)); fi
+    done < <(find "$PROFILE_DIR/$kind" -type f -print0)
+  done
+  if [[ $s_miss -gt 0 ]]; then STATE="partial";
+  elif [[ $s_diff -gt 0 ]]; then STATE="customized";
+  else STATE="synchronized"; fi
   mkdir -p "$TARGET/.claude"
-  printf 'source: https://github.com/Syo-M/fable5_skills\nversion: %s\nstyling: %s\ninstalled: %s\n' \
-    "$VERSION" "$STYLING" "$(date +%Y-%m-%d)" > "$TARGET/.claude/fable-skills-version"
+  printf 'source: https://github.com/Syo-M/fable5_skills\nversion: %s\nstyling: %s\nstate: %s\nidentical: %s\ndiffering: %s\nmissing: %s\ninstalled: %s\n' \
+    "$VERSION" "$STYLING" "$STATE" "$s_ident" "$s_diff" "$s_miss" "$(date +%Y-%m-%d)" > "$TARGET/.claude/fable-skills-version"
+  [[ "$STATE" != "synchronized" ]] && echo "note: state=$STATE ($s_diff differing, $s_miss missing) — the stamp version is the SOURCE version, not proof of full sync; see --check"
 fi
 
 echo
 echo "$RUN result: $copied installed, $skipped skipped (already present), $overwritten overwritten — version $VERSION, styling $STYLING"
 echo "next: review templates/README.md for the CI gates / lint configs (opt-in copy),"
+if [[ -n "$TEMPLATE_EXCLUDES" ]]; then
+  echo "      NOTE for the $STYLING profile: do NOT copy $TEMPLATE_EXCLUDES (it belongs to another styling profile),"
+fi
 echo "      and add project specifics (framework, commands) to CLAUDE.md."

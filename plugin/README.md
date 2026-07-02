@@ -1,7 +1,7 @@
 # fable-frontend plugin (GENERATED — do not edit)
 
 Generated from `.claude/` by `scripts/build-plugin.mjs` (source of truth: the repo root).
-Version 3.0.0. Install:
+Version 3.0.1. Install:
 
 ```
 /plugin marketplace add Syo-M/fable5_skills
@@ -19,3 +19,6 @@ NOT included (plugin limitations — use `install.sh` from the repo for the full
 
 Note: agents inject skills by bare name (e.g. `test-author` → `testing-vitest`); verify injection
 resolves in your Claude Code version when running agents from the namespaced plugin context.
+Note: plugin-loaded agents IGNORE frontmatter `hooks:` — the reviewer agents' tool-level
+read-only guard therefore does not apply here (instruction-level contract only). For the
+enforced version, install via install.sh with CLI >= 2.1.145.

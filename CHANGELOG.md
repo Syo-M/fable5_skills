@@ -4,6 +4,36 @@ All notable changes to this rules repository are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/) in reverse-chronological order; this
 repo is versioned so consuming projects can pin a tag and audits can tell which rules governed which commits.
 
+## [3.0.1] - 2026-07-02
+
+Adopts the valid findings from the second external review (ChatGPT, v3.0.0 → **92/100**, up from
+89; all ten prior P0s confirmed resolved by the reviewer). Self-vs-external gap narrowed from
+2.2 to 0.6 points.
+
+### Added
+- **Tool-level read-only enforcement for reviewer agents** (the request three review rounds old,
+  now spec-verified as possible): agent-frontmatter `hooks:` wire `reviewer-write-guard.mjs`
+  (14-case test suite) into security-reviewer / a11y-auditor / dependency-vetter — repo
+  Edit/Write and write-like Bash are DENIED; only agent-memory writes pass. Honestly scoped:
+  requires CLI >= 2.1.145 (verified against docs); older CLIs and plugin-loaded agents ignore
+  agent hooks and fall back to the instruction-level contract (documented in README + plugin).
+- Version stamp now records **sync state** (`state: synchronized|customized|partial` +
+  identical/differing/missing counts) — a v3.0.0 stamp no longer implies full sync when files
+  were skipped (external review's audit-integrity catch).
+- installer surfaces the profile's template exclusions ("do NOT copy stylelint.config.mjs for
+  the tailwind profile") — the previously-dead `excludes.templates` key is now consumed.
+
+### Fixed
+- Stale doc numbers/sentences the reviewer caught: README 構成節 85% → 88.5% (+ tailwind 12/12,
+  minimal 3/3); "next formal scoring at v3.0.0" (already executed) rephrased in README and
+  EVALUATION; README tree's new-component line neutralized (「有効なスタイリング方式」).
+- `merge-settings.mjs` dedup key is now matcher+command (was command-only): a target's same
+  command under a NARROWER matcher no longer blocks our broader wiring. Collision case added to
+  the CI installer smoke.
+- EVALUATION.md calibration honestly restated: 90 = adoptable within the declared stack once
+  org-specific wiring (CODEOWNERS teams, branch protection, CI template adaptation) is connected —
+  not "no-edits for any company".
+
 ## [3.0.0] - 2026-07-02
 
 **Styling is now an install-time PROFILE** — the decisive-rules principle is preserved (the

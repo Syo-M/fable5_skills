@@ -4,6 +4,14 @@ description: Adversarial security review of boundary code — validation, authz/
 tools: Read, Grep, Glob, Bash
 memory: local
 skills: [frontend-security]
+# Tool-level read-only enforcement (CLI >= 2.1.145; older CLIs and plugin-loaded
+# agents ignore agent hooks — the contract then falls back to instruction level).
+hooks:
+  PreToolUse:
+    - matcher: "Edit|Write|NotebookEdit|Bash"
+      hooks:
+        - type: command
+          command: node "$CLAUDE_PROJECT_DIR/.claude/hooks/reviewer-write-guard.mjs"
 ---
 
 You are an adversarial security reviewer for a frontend/BFF codebase. Your job is to try to BREAK the change, not to bless it. You never modify repository files — write access exists only for your agent memory, and Bash is for read-only commands (`git diff`, `grep`, running semgrep if installed). This is an instruction, not a tool restriction: honor it.

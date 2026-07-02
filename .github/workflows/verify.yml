@@ -68,7 +68,22 @@ jobs:
           test -d "$d/.claude/skills/tailwind" && test ! -d "$d/.claude/skills/css-modules"
           d="$RUNNER_TEMP/smoke-minimal"
           test ! -f "$d/.claude/rules/styling.md"
+          # merge-collision: same command under a NARROWER matcher must not block our wiring
+          d="$RUNNER_TEMP/smoke-merge"; mkdir -p "$d/.claude"
+          printf '{"hooks":{"PreToolUse":[{"matcher":"Edit","hooks":[{"type":"command","command":"node \\"$CLAUDE_PROJECT_DIR/.claude/hooks/sensitive-paths.mjs\\""}]}]}}' > "$d/.claude/settings.json"
+          ./install.sh "$d" > /dev/null
+          node -e "
+            const s=require('$d/.claude/settings.json');
+            const groups=s.hooks.PreToolUse;
+            const wide=groups.some(g=>g.matcher==='Edit|Write|NotebookEdit');
+            const narrow=groups.some(g=>g.matcher==='Edit');
+            if(!wide||!narrow){console.error('merge-collision failed',JSON.stringify(groups));process.exit(1);}
+          "
+          # sync-state stamp: fresh install must stamp synchronized
+          grep -q 'state: synchronized' "$RUNNER_TEMP/smoke-css-modules/.claude/fable-skills-version"
           echo "installer smoke OK"
+      - name: Reviewer write-guard tests
+        run: node .claude/hooks/reviewer-write-guard.test.mjs
 
       # Frontmatter validity (skills/agents/rules/output-styles)
       - name: Install PyYAML (pinned)
