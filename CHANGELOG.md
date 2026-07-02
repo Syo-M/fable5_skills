@@ -4,6 +4,33 @@ All notable changes to this rules repository are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/) in reverse-chronological order; this
 repo is versioned so consuming projects can pin a tag and audits can tell which rules governed which commits.
 
+## [1.8.0] - 2026-07-02
+
+### Added
+- `install.sh` + `scripts/merge-settings.mjs` — merge-safe, idempotent installer replacing the
+  error-prone manual `cp`: skips existing files (local edits survive updates; `--force` to
+  overwrite), MERGES hook entries into an existing `settings.json` (dedup by command; user's
+  own hooks/outputStyle preserved), keeps an existing `CLAUDE.md` and saves ours as
+  `CLAUDE.md.fable-skills`, gitignores `settings.local.json`, and stamps
+  `.claude/fable-skills-version` (tag + date) for audits. Verified on fresh/existing/re-run
+  scenarios including 3× idempotency.
+- Plugin distribution: `scripts/build-plugin.mjs` GENERATES `plugin/` from `.claude/` (single
+  source of truth — hand-editing banned; hook paths rebased to `${CLAUDE_PLUGIN_ROOT}`), and
+  `.claude-plugin/marketplace.json` makes this repo an installable marketplace
+  (`/plugin marketplace add Syo-M/fable5_skills` → `/plugin install fable-frontend@fable-skills`).
+  CI gains a `build-plugin.mjs --check` freshness gate so the generated tree can never drift.
+  Documented plugin limitations honestly: path-scoped rules and CLAUDE.md cannot ship in plugins
+  (docs-confirmed) — full installs use `install.sh`.
+- `MAINTENANCE.md` — the calendar-driven half of the improvement loop (the session-driven half is
+  `/retro`): quarterly version-fact re-verification protocol with an inventory table of every
+  version-sensitive claim (Next 16 caching, Astro Content Layer, Storybook 10, Vitest 4 projects,
+  zod 4, action SHA pins, Claude Code integration formats), plus the per-release checklist
+  (fetch-before-push, plugin regen, scoring cadence).
+
+### Changed
+- README: install section rewritten around the installer + plugin path (manual `cp` guidance
+  removed); tree updated; maintenance section now points at `MAINTENANCE.md` as the authority.
+
 ## [1.7.0] - 2026-07-02
 
 ### Added

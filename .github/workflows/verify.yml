@@ -44,6 +44,8 @@ jobs:
         run: node scripts/check-sync.mjs
       - name: Workflow scripts parse under harness wrapping
         run: node scripts/check-workflow-syntax.mjs
+      - name: plugin/ is fresh (generated from .claude/, no drift)
+        run: node scripts/build-plugin.mjs --check
 
       # Frontmatter validity (skills/agents/rules/output-styles)
       - name: Install PyYAML

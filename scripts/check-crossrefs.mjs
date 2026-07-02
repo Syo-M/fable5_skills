@@ -46,10 +46,13 @@ walk(root);
 const PATH_RE = /(?:^|[\s(`「])((?:\.claude|templates|scripts)\/[\w.\/-]*[\w\/])/g;
 // Paths documentation cites as ANTI-examples ("don't create this") — must not exist.
 const ANTI_EXAMPLES = new Set(['.claude/.claude']);
+// Artifacts that exist only in CONSUMING projects (created by install.sh), not in this repo.
+const INSTALLED_ARTIFACTS = new Set(['.claude/fable-skills-version', '.claude/settings.local.json']);
 for (const f of mdFiles) {
   const src = readFileSync(f, 'utf8');
   for (const m of src.matchAll(PATH_RE)) {
     const ref = m[1].replace(/\/$/, '');
+    if (INSTALLED_ARTIFACTS.has(ref)) continue;
     if (ANTI_EXAMPLES.has(ref)) {
       if (existsSync(join(root, ref))) fail(`anti-example path "${ref}" EXISTS — that's the mistake the docs warn about`);
       continue;
