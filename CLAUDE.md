@@ -25,12 +25,18 @@ Frontend project. Detailed conventions live in `.claude/skills/` and load on dem
 
 ## Workflow
 
-- Before claiming done: typecheck → lint → affected tests. "Affected" = tests colocated with changed files plus anything importing them; run the full suite when shared config, tokens, or shared utilities changed. Report failures verbatim; never label failing work complete.
+- Before claiming done: typecheck → lint → affected tests (the `pre-ship` skill runs this pipeline end-to-end, including security/a11y review passes). "Affected" = tests colocated with changed files plus anything importing them; run the full suite when shared config, tokens, or shared utilities changed. Report failures verbatim; never label failing work complete.
 - New dependencies: prefer platform APIs / zero-dep options. Ask first when a package has install scripts, adds >50 kB min+gzip to the client bundle, pulls a large transitive tree, or has a non-permissive license (see `governance`).
 - Never modify CI workflows, auth/payment code, security headers/CSP config, or `.claude/**` without explicit human sign-off.
 - Match existing repo conventions over anything written here. Small, focused diffs; no drive-by refactors.
 - Verify, don't assume: confirm a referenced file, dependency, export, or config flag actually exists — and check the installed major version — before relying on it. A name appearing in a prompt or rule doesn't guarantee it's present; check for yourself.
 - Destructive actions (deleting files, rewriting configs, force operations): state intent and confirm first.
+
+## Automation layers
+
+- `.claude/rules/` are path-triggered tripwires (they fire when you touch matching files, even if no skill loaded); skills are task-triggered and remain the authoritative rulebooks.
+- Delegate to subagents per their descriptions: `security-reviewer` after boundary changes, `a11y-auditor` after UI changes (reviewers — they report, never edit), `dependency-vetter` BEFORE adding any package, `test-author` for standalone test-writing tasks (tests accompanying your own small change may stay inline — same layer rules either way).
+- A PreToolUse hook escalates Edit/Write calls on sensitive paths to a human approval prompt — that prompt is the sign-off; never restructure a change (e.g. into a Bash write, which the hook cannot see) to avoid triggering it.
 
 ## Commands
 
@@ -61,3 +67,5 @@ frontmatter `description` — when a skill fails to fire, widen its `description
 | Translations, multi-locale, dates/currency formatting, RTL | `i18n` |
 | CI gates, dependency policy, licenses, releases, repo config | `governance` |
 | ESLint / Stylelint / tsconfig / enforcement setup | `tooling` |
+| Pre-merge verification pipeline (also `/pre-ship`) | `pre-ship` |
+| Scaffolding a new component (also `/new-component`) | `new-component` |

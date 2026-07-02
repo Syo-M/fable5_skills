@@ -4,6 +4,57 @@ All notable changes to this rules repository are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/) in reverse-chronological order; this
 repo is versioned so consuming projects can pin a tag and audits can tell which rules governed which commits.
 
+## [1.6.0] - 2026-07-02
+
+### Added
+- `.claude/rules/` — path-triggered tripwires that complement task-triggered skills and hold even
+  when no skill loads: `server-boundaries` (zod/IDOR/CSRF/webhook/SSRF invariants on server code),
+  `styling` (token enforcement on CSS), `tests` (layer map on test files), `sensitive-config`
+  (sign-off reminder on CI/framework config/lockfiles/`.claude/**`).
+- `.claude/agents/` — four subagents with persistent `memory: project`: `security-reviewer` and
+  `a11y-auditor` (read-only adversarial reviewers, use-proactively), `test-author` (layer-correct
+  test writing with injected testing skills), `dependency-vetter` (license/install-scripts/cooldown/
+  size/typosquat vetting against the `governance` policy, evidence-verbatim verdicts).
+- Two pipeline skills doubling as slash commands: `pre-ship` (typecheck → lint → affected tests →
+  scoped security/a11y review passes → sensitive-path stop, single verbatim pass/fail table) and
+  `new-component` (component + CSS Module + story with play function as one unit of done).
+- `.claude/hooks/sensitive-paths.mjs` + `.claude/settings.json` — a PreToolUse hook that machine-
+  backstops the CLAUDE.md sensitive-path sign-off rule by returning permissionDecision "ask" on
+  Edit/Write/NotebookEdit calls touching CI/deploy config, framework config/middleware,
+  auth/session/payment code, lockfiles, and `.claude/**`. Scope documented honestly: Bash-tool
+  writes are NOT intercepted (prose rule + CODEOWNERS/branch protection cover those). Dependency-
+  free Node, fail-open with a stderr breadcrumb; the hook's regex list is declared the canonical
+  sensitive-path list. Ships with a 21-case test suite (`sensitive-paths.test.mjs`, includes
+  false-positive guards: `author` ≠ `auth`, `sessionStorage` ≠ `session`).
+- `.claude/output-styles/` — `mentor` (onboarding: each decision names the rule it came from) and
+  `lead-engineer` (risk-first, evidence-verbatim reporting). Selected via `/config`.
+- `.claude/workflows/security-audit.js` — a fan-out map → per-dimension review → adversarial-verify
+  audit for Workflow-enabled harnesses (marked harness-dependent; inert on plain CLI).
+- `CLAUDE.md`: an "Automation layers" section (rules vs skills triggering, when to delegate to which
+  agent, the hook is the sign-off — never route around it) and skill-index rows for the new skills.
+- README: a formal-scoring section recording the 3-persona weighted results (v1.6.0 candidate:
+  Engineer 86.7 / Security 89.0 / LLM 89.0, avg 88.2; trajectory since v1.1.0) and the convergent
+  defects fixed before this release.
+
+### Changed
+- `.gitignore` now excludes `.claude/settings.local.json` so consuming projects don't commit
+  personal overrides.
+- `templates/eslint.config.js`: global `ignores: ['.claude/**']` so the harness-executed workflow
+  script can't break repo-wide lint globs.
+
+### Fixed (pre-release, from the 3-persona scoring of the candidate)
+- Honest enforcement scope: "machine-enforced" softened to "machine-backstopped for Edit/Write" in
+  `governance`, CLAUDE.md, and README, with the Bash-write bypass documented explicitly.
+- `server-boundaries` rule now catches App Router boundaries (`**/route.*`, `**/actions.*`) and
+  payment/billing paths; client-only file caveat added.
+- Hook regexes extended (`oauth`/`session`/`login`/`middleware`/`bun.lockb`/`yarn.lock`) and the
+  `startsWith(cwd)` path-normalization bug fixed (separator-safe).
+- Sensitive-path lists synced across their four representations, with the hook declared canonical.
+- Agent memory data-governance: all four agents now prohibit storing secrets/PII/unremediated
+  vulnerability details; `dependency-vetter` hardened against instruction-injection in fetched
+  package content; reviewer agents' "read-only" claim reworded to match actual tool grants
+  (memory writes exist; the restriction is instruction-level).
+- Restored the `[1.5.1]` section heading this entry's first draft had accidentally absorbed.
 ## [1.5.6] - 2026-06-15
 
 ### Fixed

@@ -10,6 +10,9 @@ import reactHooks from 'eslint-plugin-react-hooks';
 import jsxA11y from 'eslint-plugin-jsx-a11y';
 
 export default tseslint.config(
+  // .claude/workflows/*.js are harness-executed orchestration scripts (top-level return),
+  // not standard modules — lint/typecheck globs must not touch .claude/**.
+  { ignores: ['.claude/**'] },
   js.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
   {

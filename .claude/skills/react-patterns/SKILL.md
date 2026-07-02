@@ -5,6 +5,8 @@ description: React component and hooks conventions. Use when creating or editing
 
 # React Patterns
 
+Creating a brand-new component from scratch? Follow the `new-component` pipeline — component + CSS Module + story with play function is one unit of done.
+
 ## Components
 
 - Function components only. One exported component per file; file name matches component name (`UserCard.tsx`).
