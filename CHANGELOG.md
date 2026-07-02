@@ -4,6 +4,34 @@ All notable changes to this rules repository are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/) in reverse-chronological order; this
 repo is versioned so consuming projects can pin a tag and audits can tell which rules governed which commits.
 
+## [1.7.0] - 2026-07-02
+
+### Added
+- **The repo now applies its own governance to itself**: `.github/workflows/verify.yml` (actions
+  SHA-pinned) runs both hook test suites, settings.json parse, CHANGELOG reverse-chronology,
+  cross-reference resolution (agents' `skills:`, CLAUDE.md index table, path refs in all md files),
+  sensitive-path list sync, workflow-script syntax, and frontmatter validation — every class of
+  defect the v1.6.0 scoring caught by hand is now a merge-blocking machine check (`scripts/`).
+- `.claude/hooks/sensitive-bash.mjs` — heuristic PreToolUse hook (matcher: Bash) closing the
+  headline v1.6.0 gap: write-looking commands (`sed -i`, `tee`, redirects, `git apply`, `mv`/`cp`/
+  `rm`/`chmod`…) naming sensitive paths, and dependency-mutating package-manager calls
+  (`npm install`/`pnpm add`/… — frozen installs like `npm ci` exempt) now escalate to a human
+  prompt. Marked HONESTLY as a heuristic (obfuscatable; durable controls stay prose +
+  CODEOWNERS/branch protection). 22-case test suite included.
+- `.claude/hooks/sensitive-list.mjs` — the canonical sensitive-path list extracted to a single
+  module consumed by both hooks and by `scripts/check-sync.mjs`, which fails CI if the
+  `sensitive-config` rule globs drift from it (kills the "four-list drift" defect structurally).
+- `retro` skill (also `/retro`) — the self-improvement loop as procedure: gather human corrections /
+  repeated fix-ups / agent-memory learnings → filter (twice-occurred, decidable, not already
+  covered; trigger fixes go to `description`, not new rules) → propose diffs + machine-enforcement
+  alternatives, wait for sign-off.
+
+### Changed
+- `governance` sensitive-paths section and CLAUDE.md/README now describe the two-hook reality
+  (exact for Edit/Write, heuristic for Bash) instead of the "Bash not intercepted" caveat.
+- README: repo tree and hooks caveats updated; audit-logging removed from the remaining-gaps list
+  (ruled in `frontend-security` since v1.5.6).
+
 ## [1.6.0] - 2026-07-02
 
 ### Added

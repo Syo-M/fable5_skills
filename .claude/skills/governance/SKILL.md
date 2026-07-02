@@ -50,7 +50,7 @@ A change is mergeable only when all gates pass; gates may not be skipped or mark
 
 ## Sensitive paths — human sign-off required
 
-AI agents must not modify without explicit human approval: CI workflow files, auth/session/payment modules, security headers/CSP config, `.claude/**`, lockfile-only changes, and release/deploy configuration. Propose the diff and wait. This list is machine-backstopped by the shipped PreToolUse hook (`.claude/hooks/sensitive-paths.mjs` → permission prompt) for the file-editing tools (Edit/Write/NotebookEdit); Bash-tool writes are NOT intercepted and rely on this rule plus CODEOWNERS/branch protection. The prompt IS the sign-off — never restructure a change (e.g. into a Bash write) to avoid triggering it. The hook's regex list is the canonical sensitive-path list.
+AI agents must not modify without explicit human approval: CI workflow files, auth/session/payment modules, security headers/CSP config, `.claude/**`, lockfile-only changes, and release/deploy configuration. Propose the diff and wait. This list is machine-backstopped by two shipped PreToolUse hooks: `.claude/hooks/sensitive-paths.mjs` (Edit/Write/NotebookEdit, exact) and `.claude/hooks/sensitive-bash.mjs` (Bash, HEURISTIC — write-looking commands naming sensitive paths, plus dependency-mutating package-manager calls). The Bash heuristic can be obfuscated past; the durable controls remain this rule + CODEOWNERS/branch protection. The prompt IS the sign-off — never restructure a command to avoid triggering it. `.claude/hooks/sensitive-list.mjs` is the canonical sensitive-path list; `scripts/check-sync.mjs` (run in this repo's own CI) fails the build if the rule globs drift from it.
 
 ## Git & PR conventions
 

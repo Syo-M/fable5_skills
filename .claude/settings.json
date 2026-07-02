@@ -10,6 +10,16 @@
             "statusMessage": "Checking sensitive-path sign-off list"
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/sensitive-bash.mjs\"",
+            "statusMessage": "Checking Bash command against sign-off list"
+          }
+        ]
       }
     ]
   }

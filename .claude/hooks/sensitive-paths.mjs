@@ -5,33 +5,17 @@
  * sensitive path it returns permissionDecision "ask", which surfaces an explicit
  * approval prompt to the human instead of relying on the model to remember the rule.
  *
- * Honest scope: this intercepts the file-editing tools only. Bash-tool writes
- * (sed -i, tee, git apply, npm install mutating a lockfile) are NOT intercepted —
- * those rely on the prose rule plus CODEOWNERS/branch protection in CI.
+ * Honest scope: this intercepts the file-editing tools only. Bash-tool writes are
+ * covered (heuristically) by the companion sensitive-bash.mjs hook; both fall back
+ * to the prose rule plus CODEOWNERS/branch protection in CI.
  *
- * This regex list is the CANONICAL sensitive-path list; keep CLAUDE.md (Workflow),
- * the governance skill, and .claude/rules/sensitive-config.md in sync with it.
+ * The regex list lives in sensitive-list.mjs — the CANONICAL sensitive-path list.
  *
  * Dependency-free Node (>=18). Fails open (exit 0, stderr breadcrumb) on any
  * parse error so a broken hook never bricks the session.
- * Tested by .claude/hooks/sensitive-paths.test.mjs — run: node .claude/hooks/sensitive-paths.test.mjs
+ * Tested by sensitive-paths.test.mjs — run: node .claude/hooks/sensitive-paths.test.mjs
  */
-
-const SENSITIVE = [
-  // CI/CD and deploy configuration
-  /(^|\/)\.github\//,
-  /(^|\/)(vercel\.json|netlify\.toml)$/,
-  // Framework config and middleware (carry security headers / CSP)
-  /(^|\/)(next|astro|vite)\.config\.[^/]+$/,
-  /(^|\/)middleware\.[^/]+$/,
-  // Privileged agent instructions
-  /(^|\/)\.claude\//,
-  /(^|\/)CLAUDE\.md$/,
-  // Auth / session / payment code
-  /(^|\/)(auth|oauth|sessions?|login|payments?|billing)(\/|\.)/i,
-  // Lockfiles (lockfile-only changes are a supply-chain red flag)
-  /(^|\/)(package-lock\.json|pnpm-lock\.yaml|bun\.lock|bun\.lockb|yarn\.lock)$/,
-];
+import { SENSITIVE, REASON_SUFFIX } from './sensitive-list.mjs';
 
 let raw = '';
 process.stdin.on('data', (c) => (raw += c));
@@ -55,10 +39,7 @@ process.stdin.on('end', () => {
         hookSpecificOutput: {
           hookEventName: 'PreToolUse',
           permissionDecision: 'ask',
-          permissionDecisionReason:
-            `"${rel}" is on the human-sign-off list (CI/deploy config, framework config/middleware with security headers, ` +
-            `auth/session/payment code, lockfiles, or .claude/** privileged instructions). ` +
-            `Approve only if you reviewed this specific diff — see CLAUDE.md "Workflow" and the governance skill.`,
+          permissionDecisionReason: `"${rel}" is on the human-sign-off list ${REASON_SUFFIX}`,
         },
       }),
     );

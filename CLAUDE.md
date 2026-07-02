@@ -36,7 +36,7 @@ Frontend project. Detailed conventions live in `.claude/skills/` and load on dem
 
 - `.claude/rules/` are path-triggered tripwires (they fire when you touch matching files, even if no skill loaded); skills are task-triggered and remain the authoritative rulebooks.
 - Delegate to subagents per their descriptions: `security-reviewer` after boundary changes, `a11y-auditor` after UI changes (reviewers — they report, never edit), `dependency-vetter` BEFORE adding any package, `test-author` for standalone test-writing tasks (tests accompanying your own small change may stay inline — same layer rules either way).
-- A PreToolUse hook escalates Edit/Write calls on sensitive paths to a human approval prompt — that prompt is the sign-off; never restructure a change (e.g. into a Bash write, which the hook cannot see) to avoid triggering it.
+- PreToolUse hooks escalate sensitive-path writes to a human approval prompt (Edit/Write exactly; Bash heuristically — write-like commands and dependency mutations). The prompt is the sign-off; never restructure a command to slip past the heuristic.
 
 ## Commands
 
@@ -69,3 +69,4 @@ frontmatter `description` — when a skill fails to fire, widen its `description
 | ESLint / Stylelint / tsconfig / enforcement setup | `tooling` |
 | Pre-merge verification pipeline (also `/pre-ship`) | `pre-ship` |
 | Scaffolding a new component (also `/new-component`) | `new-component` |
+| Session retrospective → rule improvements (also `/retro`) | `retro` |

@@ -68,6 +68,7 @@ CLAUDE.md                          # 常駐コア(スタック判定規則・絶
   tooling/SKILL.md                 # ルール→ESLint/Stylelint/tsconfig 強制マップ
   pre-ship/SKILL.md                # /pre-ship — マージ前ゲート一括実行(型/リント/テスト→セキュリティ/a11y)
   new-component/SKILL.md           # /new-component — コンポーネント+CSS Module+ストーリーを1単位で生成
+  retro/SKILL.md                   # /retro — セッションの摩擦をルール改善提案に変換(自己改善ループ)
 .claude/rules/                     # パス発動のトリップワイヤー(paths: グロブで遅延ロード)
   server-boundaries.md             #   サーバー境界コード(zod/IDOR/CSRF/webhook/SSRF の不変条件)
   styling.md                       #   CSS(トークン強制・z-index・reduced-motion)
@@ -78,8 +79,13 @@ CLAUDE.md                          # 常駐コア(スタック判定規則・絶
   a11y-auditor.md                  #   WCAG 2.2 AA 監査(読み取り専用・自発発動)
   test-author.md                   #   層の正しいテスト作成(テスト系スキルを注入)
   dependency-vetter.md             #   依存追加前の審査(ライセンス/installスクリプト/cooldown/サイズ)
-.claude/hooks/sensitive-paths.mjs  # PreToolUseフック: センシティブパス書き込み→人間の承認プロンプト
-.claude/settings.json              # フック配線(リポジトリ同梱・依存ゼロ・fail-open)
+.claude/hooks/                     # PreToolUseフック(依存ゼロ・fail-open・テスト同梱)
+  sensitive-list.mjs               #   センシティブパスの正本(単一情報源)
+  sensitive-paths.mjs / .test.mjs  #   Edit/Write → 人間の承認プロンプト(21ケース)
+  sensitive-bash.mjs / .test.mjs   #   Bash書き込み・依存変更のヒューリスティック検査(22ケース)
+.claude/settings.json              # フック配線(リポジトリ同梱)
+scripts/                           # このリポジトリ自身の検証(CHANGELOG順序・相互参照・リスト同期・frontmatter)
+.github/workflows/verify.yml       # 自己検証CI — 自分のgovernanceを自分に適用(SHAピン済み)
 .claude/output-styles/             # 出力スタイル(/config で選択): mentor / lead-engineer
 .claude/workflows/security-audit.js # マルチエージェント監査(Workflowツール対応ハーネス限定)
 CODEOWNERS                         # CLAUDE.md/.claude/** をセキュリティ/基盤チームレビュー必須に
@@ -114,10 +120,12 @@ cp .claude/settings.json /path/to/your-project/.claude/   # 既存 settings.json
 - **hooks** — `settings.json` は導入先に既存の設定があると上書きになるため、その場合は `hooks` キーを
   手動でマージしてください。フックは依存ゼロの Node スクリプトで、パース失敗時は fail-open
   (セッションを壊さない)設計です。承認プロンプトが出ること自体がサインオフです。
-  **適用範囲の限界**: フックが検査するのは Edit/Write/NotebookEdit ツールのみで、**Bash 経由の書き込み
-  (`sed -i`、`tee`、`npm install` によるロックファイル変更等)は検査できません**。そこは CLAUDE.md の
-  ルール本文+CODEOWNERS/ブランチ保護が受け持ちます。フックの正規表現リストがセンシティブパスの
-  正本で、テスト(`node .claude/hooks/sensitive-paths.test.mjs`、21ケース)を同梱しています。
+  **適用範囲(正直に)**: Edit/Write/NotebookEdit は正確に検査します。Bash 経由の書き込み
+  (`sed -i`、`tee`、リダイレクト、`npm install` 等)は `sensitive-bash.mjs` が**ヒューリスティック**に
+  検査しますが、コマンド文字列は難読化で回避可能です — 最終防衛線は CLAUDE.md のルール本文+
+  CODEOWNERS/ブランチ保護です。センシティブパスの正本は `sensitive-list.mjs` の1箇所で、
+  ルール側グロブとの漂流は自己検証CI(`scripts/check-sync.mjs`)がビルド失敗として検出します。
+  両フックともテスト同梱(計43ケース)。
 - **agents の `memory: project`** — エージェントの学習はマシンローカル
   (`~/.claude/projects/…`)に蓄積され、**リポジトリでは共有されません**。チームで共有すべき知見は
   スキルか CLAUDE.md に昇格させてください。
@@ -183,8 +191,8 @@ v1.5.1 ベース+新レイヤーの候補版)
 6. エージェントメモリのデータガバナンス欠如 → 全エージェントに「秘密情報/PII/未修正脆弱性の詳細は保存禁止」を追加
 
 **既知の残課題(導入側の作業)**: ブランチ保護+CODEOWNERS レビューの有効化、単独メンテナ体制での
-職務分離(第2レビュアー)、zod/IDOR 向けの組織固有 Semgrep ルール、監査ログ/セキュリティイベント
-可観測性のルール化。
+職務分離(第2レビュアー)、zod/IDOR 向けの組織固有 Semgrep ルール。
+(監査ログのルール化は v1.5.6 で `frontend-security` に追加済み)
 
 > 注: 採点はAIペルソナによるものであり、人間のセキュリティレビューの代替ではありません
 > (`SECURITY.md` / `governance` スキル参照)。

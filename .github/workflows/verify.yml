@@ -1,0 +1,52 @@
+# This rules repo's OWN merge gate — it applies its own governance to itself.
+# Verifies the things prose can't: hook behavior, frontmatter validity,
+# CHANGELOG order, cross-reference resolution, and sensitive-path list sync.
+# Actions pinned by commit SHA per the `governance` skill.
+name: verify
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+
+      # Hooks behave as documented (the enforcement layer is itself tested)
+      - name: Hook tests — sensitive-paths (Edit/Write gate)
+        run: node .claude/hooks/sensitive-paths.test.mjs
+      - name: Hook tests — sensitive-bash (Bash heuristic gate)
+        run: node .claude/hooks/sensitive-bash.test.mjs
+
+      # settings.json is valid JSON (a broken file silently disables all hooks)
+      - name: settings.json parses
+        run: node -e "JSON.parse(require('fs').readFileSync('.claude/settings.json','utf8'))"
+
+      # Structural invariants
+      - name: CHANGELOG strictly reverse-chronological
+        run: node scripts/check-changelog.mjs
+      - name: Cross-references resolve (skills, tables, path refs)
+        run: node scripts/check-crossrefs.mjs
+      - name: Sensitive-path lists in sync (hook = canonical)
+        run: node scripts/check-sync.mjs
+      - name: Workflow scripts parse under harness wrapping
+        run: node scripts/check-workflow-syntax.mjs
+
+      # Frontmatter validity (skills/agents/rules/output-styles)
+      - name: Install PyYAML
+        run: python3 -m pip install --quiet pyyaml
+      - name: Frontmatter valid and complete
+        run: python3 scripts/check_frontmatter.py
