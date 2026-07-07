@@ -33,8 +33,11 @@ A change is mergeable only when all gates pass; gates may not be skipped or mark
 ## License policy
 
 - Allowed for shipped frontend code: MIT, Apache-2.0, BSD-2/3-Clause, ISC, 0BSD.
+- A real framework tree (Astro/Vite) also legitimately carries permissive-but-unlisted licenses: CC0-1.0 and CC-BY-4.0 (data packages like `caniuse-lite`), Python-2.0 (`argparse`), BlueOak-1.0.0 (`lru-cache`, `sax`). These are non-copyleft — add them to the allowlist rather than failing the gate. Run `license-checker --summary` FIRST when the gate goes red: `--onlyAllow` stops at the first offender, so a bare allowlist turns license triage into whack-a-mole.
 - Self-application: this rules repo itself is MIT-licensed (`LICENSE`) — the policy it demands of dependencies holds for its own artifact.
 - Denied: GPL/LGPL/AGPL, SSPL, BUSL, unlicensed/unknown. Anything else: ask before adding.
+  - Carve-out (named legal/human sign-off, per case): LGPL is acceptable ONLY for a prebuilt shared-library binary that is dynamically used and never enters the shipped bundle — e.g. `@img/sharp-libvips-*` pulled in by Astro's image tooling. Exclude it explicitly (`--exclude "LGPL-3.0-or-later"`) with an in-file comment naming the package and reason; LGPL in shipped, statically-linked code stays denied.
+- Exclude your own private root package (`--excludePrivatePackages`) — it reports as UNLICENSED and is not a third-party dependency.
 - Enforce in CI (`license-checker` / FOSSA / Snyk). Dev-only tooling may be reviewed case-by-case, but default to the same list.
 
 ## Secrets scanning

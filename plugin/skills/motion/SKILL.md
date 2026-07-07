@@ -17,7 +17,8 @@ Base invariants live in `css-modules` (animate `transform`/`opacity` only; durat
 ## Page & element transitions
 
 - View Transitions API for page transitions (Astro: native cross-document view transitions, or `<ClientRouter />` for SPA-mode extras; Next.js/SPA: progressive enhancement behind a `document.startViewTransition` feature check). It must be enhancement — navigation works identically without it.
-- Scroll-driven effects: CSS scroll-driven animations or `IntersectionObserver`. Never scroll event listeners doing style work.
+- Verify page transitions with the browser Back button AND your E2E runner before shipping — two failure modes seen in practice: Astro `<ClientRouter />` can drop page-scoped `<style>` on history back-navigation (the page reverts to an unstyled/full-width layout), and native `@view-transition { navigation: auto }` makes headless Playwright treat every link as never-"stable" so `click()` hangs. If a transition doesn't survive both, ship without it — the page must work identically anyway. Add a back-navigation smoke assertion to E2E (`testing-playwright`).
+- Scroll-driven effects: CSS scroll-driven animations or `IntersectionObserver`. Never scroll event listeners doing style work — and if E2E must click elements inside a scroll-driven animation, prefer `IntersectionObserver` + a one-shot transition: scroll-linked animations count as permanently "running", which defeats Playwright's stability check.
 
 ## Behavior rules
 

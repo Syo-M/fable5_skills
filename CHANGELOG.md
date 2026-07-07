@@ -4,6 +4,45 @@ All notable changes to this rules repository are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/) in reverse-chronological order; this
 repo is versioned so consuming projects can pin a tag and audits can tell which rules governed which commits.
 
+## [3.1.0] - 2026-07-07
+
+Session-driven `/retro` amendments from a real greenfield build (banner-prompt-gallery: Astro 5 +
+React island + Storybook/Playwright + Codex-generated imagery). Every addition below is backed by
+a failure that cost real time in that session.
+
+### Added
+- **New skill `codex-imagegen`**: delegate image generation / AI photo editing to the Codex CLI
+  (`$imagegen` / gpt-image, operator's ChatGPT subscription — no API key). Covers the exec
+  invocation + binary resolution, the sandbox-isolation rule (scratch `-C` workdir; the script,
+  not the agent, writes into the repo — content-derived prompt text is an injection surface),
+  native-size → center-crop pipeline with the mandatory bleed instruction, two-step i2i,
+  verbatim-prompt delimiters, and the human quality gate (character-exact Japanese text review,
+  trial-one-before-batch). Indexed in `core/CLAUDE.base.md`. Promoted from machine-local agent
+  memory per `/retro` — this is the only way the knowhow reaches the team.
+
+### Changed
+- `storybook`: pin the React runtime (and animation libs) in the Storybook test project's
+  `optimizeDeps.include` — mid-run Vite re-optimization reloads the page and play functions query
+  an unmounted tree (intermittent CI failures; the `Vite unexpectedly reloaded a test` warning is
+  the tell). Seen as a red `verify` job whose 3-failure/4-pass flake reproduced locally.
+- `governance` + `templates/github/workflows/ci.yml`: license gate made real-tree-proof. Allowlist
+  extended with permissive licenses actual Astro/Vite trees carry (CC0-1.0, CC-BY-4.0, Python-2.0,
+  BlueOak-1.0.0, `MIT*`, dual `(MIT OR CC0-1.0)`); `--excludePrivatePackages` for the repo's own
+  UNLICENSED root; documented `--summary`-first triage (`--onlyAllow` stops at the first offender
+  → whack-a-mole); LGPL carve-out (named human sign-off, per case) ONLY for dynamically-used
+  prebuilt shared-library binaries that never enter the bundle (e.g. `@img/sharp-libvips-*`).
+  Seen as a red `license-scan` job on the template's original 6-license allowlist.
+- `motion`: page transitions must survive the browser Back button AND headless E2E before
+  shipping — Astro `<ClientRouter />` dropped page-scoped styles on back-navigation (unstyled
+  full-width layout), and native `@view-transition` hung Playwright's `click()` stability check;
+  both were shipped, then reverted on user bug reports. Also: scroll-driven animations count as
+  permanently "running" for Playwright — use `IntersectionObserver` + one-shot transitions where
+  E2E must click.
+- `css-modules`: aspect-preserving media rule — size media with container `aspect-ratio` +
+  `object-fit`, never `max-width`/`max-height` inside a flex item (main-axis shrink sizes width
+  independently of the height cap and distorts the image). Seen as a user-reported stretched-
+  thumbnail bug in a mixed-aspect-ratio grid.
+
 ## [3.0.3] - 2026-07-02
 
 ### Changed

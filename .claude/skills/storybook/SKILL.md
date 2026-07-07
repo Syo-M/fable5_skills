@@ -63,6 +63,7 @@ export const ShowsValidationError: Story = {
 ## Running as tests
 
 - The Vitest addon turns every story into a test (render check) and runs `play` functions in a real browser (Playwright provider) — keep `npm run test` covering them in CI.
+- Pin the React runtime (and any animation lib) in the Storybook test project's `optimizeDeps.include`: `react`, `react-dom`, `react-dom/client`, `react/jsx-runtime`, `react/jsx-dev-runtime`, plus e.g. `motion/react`. Otherwise Vite discovers a dep mid-run, re-optimizes, and reloads the page — the play function then queries an unmounted tree: an intermittent "unable to find element" that often only shows in CI. The `[vitest] Vite unexpectedly reloaded a test` warning is the tell.
 - A story that can't pass headlessly (depends on viewport quirks, real network) is broken — fix the story, don't exclude it.
 - Plays that follow an animation (modal close, exit transitions) assert post-animation state with auto-retrying queries (`findBy*`, retried `expect`) — do NOT disable animations or emulate reduced motion in interaction tests; that executes a different motion code path than users get. Animations-off belongs to VRT only (see `visual-regression`).
 - Reuse stories in plain Vitest tests with `composeStories` when you need extra assertions beyond the play function.

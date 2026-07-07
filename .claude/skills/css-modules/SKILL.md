@@ -38,6 +38,7 @@ description: CSS Modules and styling conventions — design tokens, naming, vari
 
 - Mobile-first: base styles, then `@media (min-width: …)` upward. Breakpoints documented once in `tokens.css` comments (custom properties don't work in media queries — keep the canonical list there).
 - Prefer modern layout primitives: flex `gap` / grid over margin hacks; `aspect-ratio`; container queries for components that adapt to their container, media queries only for page-level layout.
+- Aspect-preserving media: give the box a defined `aspect-ratio` and use `object-fit: contain`/`cover`. Never size an image with `max-width`/`max-height` inside a flex item — the main-axis shrink sizes width independently of the height cap and stretches the image (a mixed-aspect-ratio thumbnail grid is where this bites).
 - Logical properties (`margin-inline`, `padding-block`, `inset-inline-start`) over physical ones — free RTL support (the foundation the `i18n` skill builds on).
 - No fixed heights on text containers; min-height if needed.
 

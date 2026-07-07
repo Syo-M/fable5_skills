@@ -1,14 +1,14 @@
 # fable-frontend plugin (GENERATED — do not edit)
 
 Generated from `.claude/` by `scripts/build-plugin.mjs` (source of truth: the repo root).
-Version 3.0.3. Install:
+Version 3.1.0. Install:
 
 ```
 /plugin marketplace add Syo-M/fable5_skills
 /plugin install fable-frontend@fable-skills
 ```
 
-Included: 21 skills, 4 agents, sign-off hooks (with test suites), 2 output styles.
+Included: 22 skills, 4 agents, sign-off hooks (with test suites), 2 output styles.
 
 NOT included (plugin limitations — use `install.sh` from the repo for the full set):
 - `.claude/rules/` path-scoped tripwires (plugins cannot bundle rules)

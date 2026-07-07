@@ -60,6 +60,7 @@ frontmatter `description` — when a skill fails to fire, widen its `description
 | Shared UI components, tokens/typography/icons, Figma implementation | `design-system` |
 | Animations, transitions, motion | `motion` |
 | Images, fonts, video, LCP/CLS optimization | `images-media` |
+| Generating / AI-editing images (delegate to Codex CLI) | `codex-imagegen` |
 | Charts, dashboards, data tables | `data-viz` |
 | Unit tests, test utilities | `testing-vitest` |
 | Stories, play functions, component tests | `storybook` |
