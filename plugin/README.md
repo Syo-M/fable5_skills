@@ -4,7 +4,7 @@ Generated from `.claude/` by `scripts/build-plugin.mjs` (source of truth: the re
 Version 3.3.1. Install:
 
 ```
-/plugin marketplace add Syo-M/fable5_skills
+/plugin marketplace add Syo-M/fable-frontend-skills
 /plugin install fable-frontend@fable-skills
 ```
 

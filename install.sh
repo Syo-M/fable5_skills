@@ -269,7 +269,7 @@ if [[ -z "$DRYRUN" ]]; then
   elif [[ $s_diff -gt 0 ]]; then STATE="customized";
   else STATE="synchronized"; fi
   mkdir -p "$TARGET/.claude"
-  printf 'source: https://github.com/Syo-M/fable5_skills\nversion: %s\nstyling: %s\nstate: %s\nidentical: %s\ndiffering: %s\nmissing: %s\nleftover: %s\ninstalled: %s\n' \
+  printf 'source: https://github.com/Syo-M/fable-frontend-skills\nversion: %s\nstyling: %s\nstate: %s\nidentical: %s\ndiffering: %s\nmissing: %s\nleftover: %s\ninstalled: %s\n' \
     "$VERSION" "$STYLING" "$STATE" "$s_ident" "$s_diff" "$s_miss" "$s_extra" "$(date +%Y-%m-%d)" > "$TARGET/.claude/fable-skills-version"
   if [[ "$STATE" == "stale" ]]; then
     echo "WARNING: state=stale — files from another styling profile remain and may fire alongside $STYLING:"

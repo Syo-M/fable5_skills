@@ -75,7 +75,7 @@ const manifest = {
     'skills, adversarial review agents, and sensitive-path sign-off hooks. ' +
     'Path-scoped rules and CLAUDE.md are NOT bundleable in plugins — use install.sh for those.',
   author: { name: 'Syo-M', url: 'https://github.com/Syo-M' },
-  repository: 'https://github.com/Syo-M/fable5_skills',
+  repository: 'https://github.com/Syo-M/fable-frontend-skills',
   license: 'MIT',
   keywords: ['frontend', 'react', 'nextjs', 'astro', 'security', 'a11y', 'testing'],
 };
@@ -90,7 +90,7 @@ Generated from \`.claude/\` by \`scripts/build-plugin.mjs\` (source of truth: th
 Version ${version}. Install:
 
 \`\`\`
-/plugin marketplace add Syo-M/fable5_skills
+/plugin marketplace add Syo-M/fable-frontend-skills
 /plugin install fable-frontend@fable-skills
 \`\`\`
 
