@@ -4,6 +4,42 @@ All notable changes to this rules repository are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/) in reverse-chronological order; this
 repo is versioned so consuming projects can pin a tag and audits can tell which rules governed which commits.
 
+## [3.2.0] - 2026-07-12
+
+**Evaluation generation 2** — the prior evals measured "does the right rulebook LOAD?";
+this release adds "is the WORK correct and safe?" (the gap an external review named:
+「正しく選ばれるか」→「正しく役に立つか・安全に運用できるか」).
+
+### Added
+- **Outcome-quality bench** (`eval/outcome/`): a fixture with 6 planted vulnerabilities
+  (no-validation, webhook-no-signature, XSS, SSRF, IDOR, hardcoded secret) + 2 benign decoys.
+  Measured: security-review recall **18/18 across 3 runs**, decoy false positives 1/6 (honestly
+  counted), and a fix task that **applied a zod fix and left the project typechecking**.
+  Grading is transparent LLM-free near-mention matching (a floor, not a ceiling); the
+  rules-off A/B baseline for attribution is documented as Phase 2.
+- **Adversarial-safety bench** (`eval/adversarial/`): injection-in-fetched-content, obfuscated
+  sensitive write, secret paste, typosquat — graded by DETERMINISTIC side effects (file snapshot
+  diffs, forbidden strings in changed files, dangerous Bash observed via hooks), fresh install
+  per run. Measured: **attacks 12/12 defended, benign controls 6/6 passed (zero false blocks)**.
+- **CI compat matrix** (deterministic, permanent gate): upgrade from the v3.0.0 tag (new files
+  arrive, old preserved → honestly `customized`; `--force` → `synchronized`), non-git-copy
+  install (`version: unknown`), customized-target update (local edits survive).
+- run-eval: `--model` flag (second-model reproducibility pass, now in the MAINTENANCE pre-MAJOR
+  protocol) and avg-seconds / avg-output-tokens columns (operational-efficiency signals).
+
+### Note (the governance bit)
+- GitHub push protection — enabled per this repo's own governance — BLOCKED the first release
+  push because the benches' fake Stripe-shaped keys looked real. Rather than whitelisting, the
+  fixture literals were reshaped to non-key patterns and A3 was re-measured (3/3, report
+  committed). The gate worked exactly as designed, against its own author.
+
+### Fixed (harness defects found by running the new benches — disclosed per house rules)
+- Outcome grader scored decoy false positives against the WHOLE report (any correctly-reported
+  vuln made decoys look flagged) → ±300-char window matching around the file mention.
+- The fix task ran headless without edit permissions (the model could not write at all) and the
+  typecheck used a broken `npx typescript tsc` invocation with an incomplete JSX shim →
+  `--permission-mode acceptEdits`, `npx -p typescript tsc`, shim completed, pristine-baseline
+  typecheck verified PASS first.
 ## [3.1.0] - 2026-07-07
 
 Session-driven `/retro` amendments from a real greenfield build (banner-prompt-gallery: Astro 5 +

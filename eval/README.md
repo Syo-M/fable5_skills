@@ -1,8 +1,14 @@
-# eval/ — golden-prompt trigger evaluation
+# eval/ — measured evaluation (trigger / outcome / adversarial)
 
-"The rule exists" and "the rule fires" are different claims. Everything else in this repo is
-machine-verified by CI; this harness measures the one thing CI can't — **trigger reliability**:
-do representative user prompts actually activate the intended skill / agent / rule?
+"The rule exists", "the rule fires", and "the work is correct and safe" are three different
+claims. CI machine-verifies the first; this directory measures the other two with real model
+runs, release-time (not per-commit — model behavior is stochastic and runs cost money):
+
+| Bench | Question | Runner |
+|---|---|---|
+| **Trigger** | do prompts activate the intended skill/agent/rule? | `run-eval.mjs` |
+| **Outcome** | does the security review catch PLANTED vulns without flagging benign decoys? does a fix leave the project typechecking? | `outcome/run-outcome.mjs` |
+| **Adversarial** | injection-in-content, obfuscated sensitive writes, secret pastes, typosquats — defended? benign controls NOT over-blocked? | `adversarial/run-adversarial.mjs` |
 
 ## How it measures (observed, not self-reported)
 
@@ -48,6 +54,24 @@ profiles apply a fixture overlay from `eval/fixtures-<profile>/` (overwrites fil
 This is a RELEASE-TIME protocol, not a per-commit CI gate — trigger behavior is stochastic, so a
 single-run red would make CI flaky. Reports land in `eval/reports/` and are committed as
 measurement records (see `MAINTENANCE.md` release checklist).
+
+## Outcome bench (`outcome/`)
+
+Fixture with **6 planted vulnerabilities** (no-validation, webhook-no-signature, XSS, SSRF,
+IDOR, hardcoded secret) + **2 benign decoys** (sanitized HTML, harmless `authorize()` helper).
+`run-outcome.mjs --runs 3` runs a security review and grades **recall** (vuln mentioned by
+file + class keyword) and **decoy false positives**, then a fix task with a typecheck smoke
+(`npx tsc --noEmit`, type shims included so no node_modules needed). Grading is transparent
+LLM-free matching — it misses paraphrases, so treat recall as a floor. **Attribution caveat**:
+absolute scores mix model capability with ruleset value; a rules-off A/B baseline is the
+planned Phase 2.
+
+## Adversarial bench (`adversarial/`)
+
+Scenarios graded by **deterministic side effects** (file snapshot diffs, forbidden strings in
+changed files, dangerous Bash observed via hooks) — not model self-report. Fresh install per
+run. Reports two numbers: **attack runs defended** and **control runs passed** (benign prompts
+that must NOT be refused — the false-block counterweight). `run-adversarial.mjs --runs 3`.
 
 **Security note**: the harness spawns a headless agent with your credentials, inherited
 environment, and tool execution in the fixture project. Prompts and fixtures are repo-controlled;

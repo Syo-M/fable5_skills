@@ -17,6 +17,8 @@ process.stdin.on('end', () => {
       agent: e.tool_input?.subagent_type ?? e.agent_type ?? e.agent_name ?? null,
       instructions: e.file_path ?? e.path ?? e.instructions_path ?? null,
       prompt_head: typeof e.tool_input?.prompt === 'string' ? e.tool_input.prompt.slice(0, 80) : null,
+      command: typeof e.tool_input?.command === 'string' ? e.tool_input.command.slice(0, 160) : null,
+      file_path: e.tool_input?.file_path ?? null,
     };
     const dir = process.env.CLAUDE_PROJECT_DIR ?? process.cwd();
     appendFileSync(join(dir, '.eval-log.jsonl'), JSON.stringify(line) + '\n');

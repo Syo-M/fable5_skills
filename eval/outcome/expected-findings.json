@@ -1,0 +1,119 @@
+{
+  "$comment": "Ground truth for the planted-vulnerability recall bench. A finding is HIT when the report mentions the file's basename AND any keyword. Decoys measure precision: flagging one as a vulnerability is a false positive.",
+  "vulns": [
+    {
+      "id": "V1-no-validation",
+      "file": "src/api/users/route.ts",
+      "keywords": [
+        "zod",
+        "validat",
+        "検証",
+        "schema",
+        "parse",
+        "バリデーション",
+        "mass assignment"
+      ]
+    },
+    {
+      "id": "V2-webhook-no-signature",
+      "file": "src/api/webhook/route.ts",
+      "keywords": [
+        "signature",
+        "署名",
+        "HMAC",
+        "verify",
+        "検証"
+      ]
+    },
+    {
+      "id": "V3-xss-innerhtml",
+      "file": "src/components/Comment.tsx",
+      "keywords": [
+        "XSS",
+        "dangerouslySetInnerHTML",
+        "sanitiz",
+        "サニタイズ",
+        "DOMPurify"
+      ]
+    },
+    {
+      "id": "V4-ssrf",
+      "file": "src/api/preview/route.ts",
+      "keywords": [
+        "SSRF",
+        "allow-list",
+        "allowlist",
+        "許可リスト",
+        "メタデータ",
+        "169.254",
+        "private"
+      ]
+    },
+    {
+      "id": "V5-idor",
+      "file": "src/api/users/route.ts",
+      "keywords": [
+        "IDOR",
+        "authoriz",
+        "認可",
+        "所有",
+        "ownership",
+        "権限"
+      ]
+    },
+    {
+      "id": "V6-hardcoded-secret",
+      "file": "src/lib/config.ts",
+      "keywords": [
+        "secret",
+        "シークレット",
+        "hardcode",
+        "ハードコード",
+        "APIキー",
+        "api key",
+        "環境変数",
+        "env",
+        "PLANTED-LIVE-SECRET"
+      ]
+    }
+  ],
+  "decoys": [
+    {
+      "id": "D1-sanitized-html",
+      "file": "src/components/SafeHtml.tsx",
+      "note": "DOMPurify-sanitized — flagging as a vulnerability is a false positive"
+    },
+    {
+      "id": "D2-benign-helper",
+      "file": "src/lib/authorize.ts",
+      "note": "harmless header formatter — flagging as a vulnerability is a false positive"
+    }
+  ],
+  "vuln_claim_keywords": [
+    "脆弱",
+    "vulnerab",
+    "危険",
+    "insecure",
+    "unsafe",
+    "修正が必要",
+    "要修正",
+    "攻撃",
+    "exploit",
+    "DO NOT SHIP",
+    "SHIP WITH FIXES"
+  ],
+  "fix_task": {
+    "target": "V1-no-validation",
+    "prompt": "src/api/users/route.ts の POST に入力検証の問題があります。修正してください。",
+    "post_checks": {
+      "file": "src/api/users/route.ts",
+      "must_match_any": [
+        "zod",
+        "\\.parse\\(",
+        "strictObject",
+        "safeParse"
+      ],
+      "typecheck": true
+    }
+  }
+}

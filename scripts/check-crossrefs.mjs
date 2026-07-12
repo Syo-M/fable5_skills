@@ -11,7 +11,7 @@ import { fileURLToPath } from 'node:url';
 import { execSync } from 'node:child_process';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const skillDirs = new Set(readdirSync(join(root, '.claude/skills')));
+const skillDirs = new Set(readdirSync(join(root, '.claude/skills')).filter((d) => !d.startsWith('.')));
 let failed = 0;
 const fail = (msg) => { console.error(`FAIL  ${msg}`); failed++; };
 

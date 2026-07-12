@@ -85,6 +85,37 @@ jobs:
       - name: Reviewer write-guard tests
         run: node .claude/hooks/reviewer-write-guard.test.mjs
 
+      # Compat matrix: the install/update paths a real adopter will hit.
+      # Deterministic (no model calls) — safe as a permanent merge gate.
+      - name: Compat matrix (upgrade / force-sync / non-git / customized)
+        run: |
+          set -e
+          # (1) upgrade path: install from the v3.0.0 tag, then update with current
+          git fetch --depth 1 origin tag v3.0.0
+          git worktree add "$RUNNER_TEMP/old-src" v3.0.0
+          d="$RUNNER_TEMP/compat-upgrade"; mkdir -p "$d"
+          "$RUNNER_TEMP/old-src/install.sh" "$d" > /dev/null
+          test ! -f "$d/.claude/hooks/reviewer-write-guard.mjs"   # didn't exist at v3.0.0
+          ./install.sh "$d" > /dev/null
+          test -f "$d/.claude/hooks/reviewer-write-guard.mjs"     # new file arrives on update
+          grep -q "state: customized" "$d/.claude/fable-skills-version"  # old files preserved, honestly stamped
+          # (2) --force brings the target to full sync
+          ./install.sh "$d" --force > /dev/null
+          grep -q "state: synchronized" "$d/.claude/fable-skills-version"
+          # (3) non-git copy install (e.g. downloaded zip): works, stamps version unknown
+          rsync -a --exclude .git --exclude plugin --exclude eval . "$RUNNER_TEMP/nogit-src/"
+          d2="$RUNNER_TEMP/compat-nogit"; mkdir -p "$d2"
+          "$RUNNER_TEMP/nogit-src/install.sh" "$d2" > /dev/null
+          grep -q "version: unknown" "$d2/.claude/fable-skills-version"
+          # (4) customized target: local edit survives update and is stamped
+          d3="$RUNNER_TEMP/compat-custom"; mkdir -p "$d3"
+          ./install.sh "$d3" > /dev/null
+          echo "LOCAL EDIT" >> "$d3/.claude/skills/retro/SKILL.md"
+          ./install.sh "$d3" > /dev/null
+          grep -q "LOCAL EDIT" "$d3/.claude/skills/retro/SKILL.md"
+          grep -q "state: customized" "$d3/.claude/fable-skills-version"
+          echo "compat matrix OK"
+
       # Frontmatter validity (skills/agents/rules/output-styles)
       - name: Install PyYAML (pinned)
         run: python3 -m pip install --quiet pyyaml==6.0.3

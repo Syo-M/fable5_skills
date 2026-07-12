@@ -25,9 +25,11 @@ if (!version) { console.error('FAIL  cannot read version from CHANGELOG.md'); pr
 rmSync(outDir, { recursive: true, force: true });
 mkdirSync(join(outDir, '.claude-plugin'), { recursive: true });
 
-// 1. components copied verbatim from the source of truth
+// 1. components copied verbatim from the source of truth (OS junk filtered —
+//    a stray .DS_Store must never become a plugin diff)
+const noJunk = (src) => !src.split('/').pop().startsWith('.DS_Store');
 for (const dir of ['skills', 'agents', 'output-styles']) {
-  cpSync(join(root, '.claude', dir), join(outDir, dir), { recursive: true });
+  cpSync(join(root, '.claude', dir), join(outDir, dir), { recursive: true, filter: noJunk });
 }
 // Plugin-loaded subagents IGNORE frontmatter `hooks:` (Claude Code strips them
 // for security). Leaving them in would read as "configured but silently inert",

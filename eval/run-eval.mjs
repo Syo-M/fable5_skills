@@ -24,6 +24,7 @@ const RUNS = Number(arg('runs', '1'));
 const MAX_TURNS = arg('max-turns', '3');
 const ONLY = arg('only', '')?.split(',').filter(Boolean);
 const STYLING = arg('styling', 'css-modules');
+const MODEL = arg('model', ''); // e.g. --model haiku for the second-model reproducibility pass
 const WORKDIR = arg('workdir', join(tmpdir(), `fable-eval-project-${STYLING}`));
 const KEEP = process.argv.includes('--keep');
 
@@ -79,15 +80,19 @@ function setup() {
 function runOnce(prompt) {
   const logFile = join(WORKDIR, '.eval-log.jsonl');
   rmSync(logFile, { force: true });
-  const res = spawnSync(
-    'claude',
-    ['-p', prompt, '--max-turns', MAX_TURNS, '--output-format', 'json'],
-    { cwd: WORKDIR, encoding: 'utf8', timeout: 240_000, env: { ...process.env } },
-  );
+  const cliArgs = ['-p', prompt, '--max-turns', MAX_TURNS, '--output-format', 'json'];
+  if (MODEL) cliArgs.push('--model', MODEL);
+  const t0 = process.hrtime.bigint();
+  const res = spawnSync('claude', cliArgs, {
+    cwd: WORKDIR, encoding: 'utf8', timeout: 240_000, env: { ...process.env },
+  });
+  const seconds = Number(process.hrtime.bigint() - t0) / 1e9;
   const model =
     res.stdout?.match(/"model"\s*:\s*"([^"]+)"/)?.[1] ??
     res.stdout?.match(/"modelUsage"\s*:\s*\{\s*"([^"]+)"/)?.[1] ??
     null;
+  // operational-efficiency signals (from the CLI's result JSON where present)
+  const outTokens = Number(res.stdout?.match(/"output_tokens"\s*:\s*(\d+)/)?.[1] ?? 0);
   const observed = { skills: new Set(), agents: new Set(), rules: new Set() };
   if (existsSync(logFile)) {
     for (const line of readFileSync(logFile, 'utf8').split('\n').filter(Boolean)) {
@@ -105,7 +110,7 @@ function runOnce(prompt) {
   // positive-FAIL. A run counts ONLY if the CLI exited 0 and returned a result.
   const valid =
     res.status === 0 && !res.error && typeof res.stdout === 'string' && res.stdout.includes('"result"');
-  return { observed, model, valid, timedOut: res.error?.code === 'ETIMEDOUT', exit: res.status };
+  return { observed, model, valid, seconds, outTokens, timedOut: res.error?.code === 'ETIMEDOUT', exit: res.status };
 }
 
 // ---- scoring ----
@@ -155,6 +160,8 @@ let consecutiveInvalid = 0;
 for (const p of selected) {
   let passes = 0;
   let validRuns = 0;
+  let sumSec = 0;
+  let sumTok = 0;
   const union = { skills: new Set(), agents: new Set(), rules: new Set() };
   let notes = [];
   for (let i = 0; i < RUNS; i++) {
@@ -170,13 +177,17 @@ for (const p of selected) {
     }
     consecutiveInvalid = 0;
     validRuns++;
+    sumSec += r.seconds;
+    sumTok += r.outTokens;
     for (const k of ['skills', 'agents', 'rules']) r.observed[k].forEach((v) => union[k].add(v));
     const s = score(p, r.observed);
     if (s.pass) passes++;
     else if (s.why) notes.push(s.why);
   }
   const rate = `${passes}/${validRuns}`;
-  rows.push({ ...p, rate, passes, validRuns, union, notes: [...new Set(notes)].join('; ') });
+  const avgSec = validRuns ? (sumSec / validRuns).toFixed(0) : '-';
+  const avgTok = validRuns ? Math.round(sumTok / validRuns) : '-';
+  rows.push({ ...p, rate, passes, validRuns, avgSec, avgTok, union, notes: [...new Set(notes)].join('; ') });
   const label = validRuns === 0 ? 'NO-DATA' : passes === validRuns ? 'PASS' : passes > 0 ? 'FLAKY' : 'FAIL';
   console.log(`${label}  ${p.id}  ${rate}  [skills: ${[...union.skills].join(',') || '-'}] [agents: ${[...union.agents].join(',') || '-'}] [rules: ${[...union.rules].join(',') || '-'}]${rows.at(-1).notes ? '  (' + rows.at(-1).notes + ')' : ''}`);
 }
@@ -205,9 +216,9 @@ writeFileSync(reportPath, `# Trigger evaluation — rules under test: ${version}
   by hooks (PostToolUse Skill/Task, SubagentStart, InstructionsLoaded) — observed, not self-reported.
 - Run count: ${RUNS < 3 ? `${RUNS} (below release-grade — use --runs 3; treat rates as first signal)` : `${RUNS} (release-grade)`}
 
-| id | lang | rate | expected | observed (union) | notes |
-|---|---|---|---|---|---|
-${rows.map((r) => `| ${r.id} | ${r.lang ?? ''} | ${r.rate} | ${[
+| id | lang | rate | avg sec | avg out-tok | expected | observed (union) | notes |
+|---|---|---|---|---|---|---|---|
+${rows.map((r) => `| ${r.id} | ${r.lang ?? ''} | ${r.rate} | ${r.avgSec} | ${r.avgTok} | ${[
   r.skills_any?.length ? `skills:${r.skills_any.join('/')}` : '',
   r.agents_any?.length ? `agents:${r.agents_any.join('/')}` : '',
   r.rules_any?.length ? `rules:${r.rules_any.join('/')}` : '',

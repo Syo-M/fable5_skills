@@ -1,7 +1,7 @@
 # fable-frontend plugin (GENERATED — do not edit)
 
 Generated from `.claude/` by `scripts/build-plugin.mjs` (source of truth: the repo root).
-Version 3.1.0. Install:
+Version 3.2.0. Install:
 
 ```
 /plugin marketplace add Syo-M/fable5_skills

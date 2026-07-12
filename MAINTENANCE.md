@@ -43,8 +43,14 @@ Do this every quarter AND whenever a covered framework ships a major version.
    regenerated `CLAUDE.md` (never edit the root CLAUDE.md directly).
 4. `git fetch` before pushing — this repo receives pushes from multiple sessions/machines.
 5. Annotated tag `vX.Y.Z` = the CHANGELOG heading; push main + tag together.
-6. Trigger evaluation (`eval/` — see its README): `node eval/run-eval.mjs --runs 3` before a MAJOR
-   release; 1-run signal checks after big description/trigger changes. Commit the report.
+6. Measured evaluation (`eval/` — see its README) before a MAJOR release; 1-run signal checks
+   after big trigger/security changes. Commit the reports:
+   - trigger: `node eval/run-eval.mjs --runs 3`
+   - outcome: `node eval/outcome/run-outcome.mjs --runs 3`
+   - adversarial: `node eval/adversarial/run-adversarial.mjs --runs 3`
+   - reproducibility: repeat the trigger series once with a second model
+     (`--model haiku` or similar) and record the delta — a single-model high score can
+     drop silently on model updates.
 7. Formal 3-persona scoring cadence: at minimum before every MAJOR bump; record results in
    README「品質評価」 (rubric + persona prompts are reproduced there).
 
