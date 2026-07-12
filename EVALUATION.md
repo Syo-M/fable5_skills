@@ -91,13 +91,15 @@ MAJOR 前ゲート(`--runs 3` 発動評価+ペルソナ採点)を実施済み。
 - オーバートリガー負例3本すべて 3/3 クリーン(過剰ロードの副作用は実測ゼロ)
 - レイヤー別信頼性: **エージェント > パスルール > 手順スキル > 領域ルールブックスキル**
 - 3ターンで 0/3 だった3本は **`--max-turns 6` の感度実験で全て 3/3**
-  (測定地平のアーティファクトと実証。`eval/reports/v2.0.0-horizon-experiment.md`)
+  (測定地平のアーティファクトと実証。`eval/reports/archive/v2.0.0-horizon-experiment.md`)
 
 ### 生データ
 
-`eval/reports/` に全レポートをコミット済み: `v1.8.0-baseline-26prompts.md`(ベースライン)/
-`v1.9.0-summary.md`(原因特定と修正の統合)/ `v1.9.1-3runs.md`(リリースグレード本測定)/
-`v2.0.0-retest-3gaps.md`・`v2.0.0-horizon-experiment.md`(反証実験)
+`eval/reports/` に全レポートをコミット済み。現行世代(v3.x)は直下に、v2.0.0 以前の履歴は
+`eval/reports/archive/` に集約(監査可能性は保ちつつ working set を軽く保つため):
+`archive/v1.8.0-baseline-26prompts.md`(ベースライン)/ `archive/v1.9.0-summary.md`(原因特定と
+修正の統合)/ `archive/v1.9.1-3runs.md`(リリースグレード本測定)/
+`archive/v2.0.0-retest-3gaps.md`・`archive/v2.0.0-horizon-experiment.md`(反証実験)
 
 ## 2.5 成果物品質・敵対的安全性・帰属分析(v3.2.0〜)
 

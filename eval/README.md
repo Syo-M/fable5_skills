@@ -64,7 +64,8 @@ not only via the Vite-side negative.
 
 **Cost & cadence**: every run is a real model invocation on your account (~26 prompts × runs).
 This is a RELEASE-TIME protocol, not a per-commit CI gate — trigger behavior is stochastic, so a
-single-run red would make CI flaky. Reports land in `eval/reports/` and are committed as
+single-run red would make CI flaky. Reports land in `eval/reports/` (pre-v3 history is kept
+under `eval/reports/archive/` to keep the working set light) and are committed as
 measurement records (see `MAINTENANCE.md` release checklist).
 
 ## Outcome bench (`outcome/`)
@@ -126,7 +127,7 @@ namespaced names in the report prove origin. Release-time (step 2 is a real mode
 - DONE (v2.0.0): over-trigger negatives — 3 prompts, all 3/3 clean; the load-first directive has
   no measured over-loading cost.
 - DONE (v2.0.0): max-turns sensitivity experiment — the 3 former 0/3 "structural" gaps are ALL
-  3/3 at `--max-turns 6` (reports/v2.0.0-horizon-experiment.md): they were measurement-horizon
+  3/3 at `--max-turns 6` (reports/archive/v2.0.0-horizon-experiment.md): they were measurement-horizon
   artifacts, not missing triggers. Every golden prompt has demonstrated activation.
 
 ## Interpreting failures
