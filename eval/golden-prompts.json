@@ -1,5 +1,5 @@
 {
-  "$comment": "Golden prompts for trigger evaluation. Scoring: PASS = every skills_all present, ≥1 of each non-empty *_any group observed, nothing in forbid observed. Fixture project is a Vite+React SPA (see fixtures/).",
+  "$comment": "Golden prompts for trigger evaluation. Scoring: PASS = every skills_all present, ≥1 of each non-empty *_any group observed, nothing in forbid observed. Default fixture is a Vite+React SPA (see fixtures/); `fixture: next|astro` scopes a prompt to a framework overlay (run with --fixture next / --fixture astro).",
   "prompts": [
     { "id": "css-style-jp", "lang": "ja", "prompt": "src/components/Button.tsx のボタンの見た目を整えて、ホバー時のスタイルも追加して", "skills_any": ["css-modules"], "rules_any": ["styling"], "styling_profile": "css-modules" },
     { "id": "css-darkmode-jp", "lang": "ja", "prompt": "ダークモード対応したい", "skills_any": ["css-modules", "design-system"], "styling_profile": "css-modules" },
@@ -34,6 +34,14 @@
     { "id": "overtrigger-gitignore-jp", "lang": "ja", "prompt": ".gitignoreにdist/を追加して", "forbid_all": true, "notes": "config line-add matching no skill row — nothing should load" },
     { "id": "overtrigger-question-en", "lang": "en", "prompt": "What package manager does this project use? Just answer, don't change anything.", "forbid_all": true, "notes": "pure question — nothing should load" },
     { "id": "form-tripwire-jp", "lang": "ja", "prompt": "src/components/ContactForm.tsx を新規作成して、名前とメールと本文を送信できる問い合わせフォームにして", "skills_any": ["frontend-security"], "rules_any": ["forms"], "any_group_mode": "either", "notes": "names a *Form.tsx file — measures the forms.md tripwire firing on write" },
-    { "id": "minimal-style-jp", "lang": "ja", "prompt": "src/components/Button.tsx のボタンの見た目を整えて、ホバー時のスタイルも追加して", "skills_any": ["react-patterns"], "forbid_skills": ["css-modules", "tailwind"], "styling_profile": "minimal", "notes": "minimal profile: component work proceeds with NO styling rulebook loaded" }
+    { "id": "minimal-style-jp", "lang": "ja", "prompt": "src/components/Button.tsx のボタンの見た目を整えて、ホバー時のスタイルも追加して", "skills_any": ["react-patterns"], "forbid_skills": ["css-modules", "tailwind"], "styling_profile": "minimal", "notes": "minimal profile: component work proceeds with NO styling rulebook loaded" },
+    { "id": "next-page-jp", "lang": "ja", "prompt": "設定ページ(パスは /settings)を新規追加して", "skills_any": ["nextjs"], "forbid_skills": ["astro", "vite-react"], "fixture": "next", "notes": "framework precedence: next present → nextjs, never astro/vite-react. Prompt must NOT start with '/': headless -p parses a leading /word as a skill invocation (measured: 'Unknown skill: settings', model never saw the prompt)" },
+    { "id": "next-server-action-jp", "lang": "ja", "prompt": "問い合わせフォームをServer Actionで実装して", "skills_any": ["nextjs"], "fixture": "next" },
+    { "id": "next-caching-jp", "lang": "ja", "prompt": "ダッシュボードのデータ取得結果をキャッシュしたい。ただしデータ更新後は最新が見えるように", "skills_any": ["nextjs"], "fixture": "next" },
+    { "id": "next-security-review-jp", "lang": "ja", "prompt": "app/api/users/route.ts のセキュリティチェックして", "agents_any": ["security-reviewer"], "fixture": "next", "notes": "framework-agnostic agent must fire in the Next fixture too" },
+    { "id": "astro-page-jp", "lang": "ja", "prompt": "アバウトページ(パスは /about)を新規追加して", "skills_any": ["astro"], "forbid_skills": ["nextjs", "vite-react"], "fixture": "astro", "notes": "framework precedence: astro present → astro, even though react+vite also appear. Prompt must NOT start with '/' (slash-command parsing — see next-page-jp)" },
+    { "id": "astro-island-jp", "lang": "ja", "prompt": "src/components/Button.tsx をトップページでクライアント動作するアイランドとして使いたい", "skills_any": ["astro"], "fixture": "astro" },
+    { "id": "astro-content-jp", "lang": "ja", "prompt": "ブログ記事をコンテンツコレクションで管理できるようにして", "skills_any": ["astro"], "fixture": "astro" },
+    { "id": "astro-routing-precedence-jp", "lang": "ja", "prompt": "このプロジェクトのルーティングを整理したい", "skills_any": ["astro"], "forbid_skills": ["nextjs", "vite-react"], "fixture": "astro", "notes": "mirror of negative-nextjs-jp: generic routing ask must resolve to astro here" }
   ]
 }

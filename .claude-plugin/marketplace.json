@@ -4,7 +4,6 @@
     "name": "Syo-M",
     "url": "https://github.com/Syo-M"
   },
-  "description": "Frontend rules for Claude Code — React/Next.js/Vite/Astro, CSS Modules, Vitest/Playwright/Storybook",
   "plugins": [
     {
       "name": "fable-frontend",
@@ -12,5 +11,8 @@
       "license": "MIT",
       "description": "Skills, adversarial review agents, and sensitive-path sign-off hooks for frontend work. For path-scoped rules + CLAUDE.md (not bundleable in plugins), use install.sh from the repo."
     }
-  ]
+  ],
+  "metadata": {
+    "description": "Frontend rules for Claude Code — React/Next.js/Vite/Astro, CSS Modules, Vitest/Playwright/Storybook"
+  }
 }

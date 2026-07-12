@@ -1,0 +1,8 @@
+{
+  "name": "eval-fixture-next",
+  "private": true,
+  "type": "module",
+  "scripts": { "dev": "next dev", "build": "next build", "start": "next start", "typecheck": "tsc --noEmit", "lint": "eslint .", "test": "vitest run", "test:e2e": "playwright test", "storybook": "storybook dev" },
+  "dependencies": { "next": "^16.0.0", "react": "^19.0.0", "react-dom": "^19.0.0", "zod": "^4.0.0" },
+  "devDependencies": { "typescript": "^5.6.0", "vitest": "^4.0.0" }
+}

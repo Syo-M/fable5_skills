@@ -99,11 +99,30 @@ MAJOR 前ゲート(`--runs 3` 発動評価+ペルソナ採点)を実施済み。
 `v1.9.0-summary.md`(原因特定と修正の統合)/ `v1.9.1-3runs.md`(リリースグレード本測定)/
 `v2.0.0-retest-3gaps.md`・`v2.0.0-horizon-experiment.md`(反証実験)
 
+## 2.5 成果物品質・敵対的安全性・帰属分析(v3.2.0〜)
+
+発動(選択の正しさ)に加えて、v3.2.0 から**成果そのもの**を測定している(手法詳細は `eval/README.md`):
+
+- **成果物品質**(`eval/outcome/`): 既知脆弱性6種+良性デコイ2種を埋め込んだ fixture への
+  セキュリティレビュー。再現率 **18/18**(3ラン)・デコイ誤検知 **1/6**・修正タスクは
+  ハウス標準(zod)準拠+typecheck PASS。判定は LLM を使わない機械照合(下限値)
+- **rules-off A/B ベースライン**(v3.3.0 測定): 同一プロンプト・同一採点をルール**無し**で実行した
+  対照実験。再現率は同値(18/18 — この6種はモデル単体で検出可能)。**ルールの実測寄与は
+  (1) 精度: デコイ誤検知 3/6 → 1/6(ベースラインは DOMPurify 済み HTML を毎回誤検知)、
+  (2) 規約準拠: ベースラインの修正は機能的には正しいが手書き typeof 検証で、zod 標準に従わない**。
+  再現率で差を出すには、より巧妙な埋込み(ロジックレベルの認可バイパス等)が必要 — Backlog
+- **敵対的安全性**(`eval/adversarial/`): 攻撃 **12/12 防御**・良性コントロール **6/6 通過**
+  (誤ブロックゼロ)。判定は実行前後のファイル差分等の決定的検査
+- **配布物ランタイム**(`eval/plugin-smoke.mjs`、v3.3.0 新設): `claude plugin validate` +
+  `--plugin-dir` 起動でプラグイン由来コンポーネントの発動を実測(**2/2**、名前空間つき観測名で
+  由来を証明)。初回実行で `displayName` マニフェスト不備を検出・修正済み
+
 ## 3. 既知の限界・残課題
 
 - **自己評価バイアス**: 上記の通り。外部評価(89)との差 ≈ 2点を目安とする
-- 発動実測は Vite+React fixture のみ(Next/Astro の肯定テストは未実装 — `eval/README.md` Backlog)
-- 単一モデル・単一 CLI バージョンでの測定(複数モデル再現は未実施)
+- ~~発動実測は Vite+React fixture のみ~~ → v3.3.0 で Next/Astro fixture の肯定テストを追加
+  (`--fixture next|astro`、結果は `eval/reports/`)
+- 単一モデル・単一 CLI バージョンでの測定(複数モデル再現は `--model` で手順化済み・未実施)
 - 導入側の作業: ブランチ保護+CODEOWNERS レビュー有効化、第2レビュアー(職務分離)、
   zod/IDOR 向け組織固有 Semgrep ルール
 - **正式採点の実施タイミング**: MAJOR リリース前は必須(`MAINTENANCE.md` ゲート、v3.0.0 で実施済み)。
@@ -119,6 +138,14 @@ python3 scripts/check_frontmatter.py && node scripts/build-plugin.mjs --check
 
 # 発動実測(リリースグレード、実モデル呼び出し ≈ 90ラン、要 claude CLI)
 node eval/run-eval.mjs --runs 3
+node eval/run-eval.mjs --fixture next --runs 3   # Next.js シリーズ
+node eval/run-eval.mjs --fixture astro --runs 3  # Astro シリーズ
+
+# 成果物品質・帰属・敵対的安全性・配布物ランタイム(実モデル呼び出し)
+node eval/outcome/run-outcome.mjs --runs 3
+node eval/outcome/run-outcome.mjs --baseline --runs 3   # rules-off 対照
+node eval/adversarial/run-adversarial.mjs --runs 3
+node eval/plugin-smoke.mjs
 ```
 
 ペルソナ採点の再現は、上記ルーブリック・較正・「成果物を実行検証せよ」の指示で3エージェントを

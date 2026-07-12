@@ -4,7 +4,11 @@
 // and whether a requested fix leaves the project typechecking.
 // Unlike eval/run-eval.mjs (did the rulebook LOAD?), this grades the WORK.
 //
-//   node eval/outcome/run-outcome.mjs [--runs N] [--skip-fix] [--model X] [--keep]
+//   node eval/outcome/run-outcome.mjs [--runs N] [--skip-fix] [--model X] [--keep] [--baseline]
+//
+// --baseline: run the SAME prompts/grading WITHOUT installing the rules (no
+// .claude/, no CLAUDE.md) — the A/B control that shows what the rules add
+// beyond the model's own ability (attribution, not just absolute recall).
 //
 // Grading is transparent keyword/file matching against expected-findings.json
 // (limitations documented in eval/README.md). Release-time protocol, not CI:
@@ -26,7 +30,8 @@ const MODEL = arg('model', '');
 const SKIP_FIX = process.argv.includes('--skip-fix');
 const FIX_ONLY = process.argv.includes('--fix-only');
 const KEEP = process.argv.includes('--keep');
-const WORKDIR = join(tmpdir(), 'fable-outcome-project');
+const BASELINE = process.argv.includes('--baseline');
+const WORKDIR = join(tmpdir(), `fable-outcome-project${BASELINE ? '-baseline' : ''}`);
 
 const manifest = JSON.parse(readFileSync(join(here, 'expected-findings.json'), 'utf8'));
 
@@ -34,7 +39,8 @@ function setup() {
   rmSync(WORKDIR, { recursive: true, force: true });
   mkdirSync(WORKDIR, { recursive: true });
   cpSync(join(here, 'fixtures-vuln'), WORKDIR, { recursive: true });
-  execFileSync('bash', [join(root, 'install.sh'), WORKDIR], { stdio: 'pipe' });
+  // baseline = the A/B control: pristine fixtures, no rules installed at all
+  if (!BASELINE) execFileSync('bash', [join(root, 'install.sh'), WORKDIR], { stdio: 'pipe' });
 }
 
 function claude(prompt, maxTurns, opts = {}) {
@@ -72,7 +78,7 @@ function nearFile(text, file, kws, window = 300) {
 }
 
 setup();
-console.log(`outcome bench: ${manifest.vulns.length} planted vulns + ${manifest.decoys.length} decoys × ${RUNS} review run(s) in ${WORKDIR}\n`);
+console.log(`outcome bench${BASELINE ? ' [BASELINE — rules NOT installed]' : ''}: ${manifest.vulns.length} planted vulns + ${manifest.decoys.length} decoys × ${RUNS} review run(s) in ${WORKDIR}\n`);
 
 const REVIEW_PROMPT =
   'このプロジェクトのセキュリティレビューをしてください。src/ 以下の全ファイルを確認し、見つかった脆弱性を「ファイルパス+内容+深刻度」で漏れなく列挙してください。';
@@ -114,21 +120,25 @@ if (!SKIP_FIX && (validRuns > 0 || FIX_ONLY)) {
       });
       tsOk = ts.status === 0 ? 'PASS' : `FAIL\n${(ts.stdout || ts.stderr || '').slice(0, 500)}`;
     }
-    fixResult = `fix-applied: ${fixed ? 'YES' : 'NO'} / typecheck: ${tsOk}`;
+    // must_match_any encodes the HOUSE STANDARD (zod at the boundary) — "NO" means
+    // the fix isn't standard-conformant, not necessarily that nothing was fixed
+    // (verified: the rules-off baseline hand-rolls typeof checks instead of zod).
+    fixResult = `standard-conformant fix (zod): ${fixed ? 'YES' : 'NO'} / typecheck: ${tsOk}`;
     console.log(`\nfix task (${f.target}): ${fixResult.split('\n')[0]}`);
   }
 }
 
 const version = execFileSync('git', ['-C', root, 'describe', '--tags', '--always', '--dirty'], { encoding: 'utf8' }).trim();
 mkdirSync(join(root, 'eval', 'reports'), { recursive: true });
-let reportPath = join(root, 'eval', 'reports', `${version}-outcome-${RUNS}runs.md`);
-for (let n = 2; existsSync(reportPath); n++) reportPath = join(root, 'eval', 'reports', `${version}-outcome-${RUNS}runs-${n}.md`);
+const modeTag = BASELINE ? '-baseline' : '';
+let reportPath = join(root, 'eval', 'reports', `${version}-outcome${modeTag}-${RUNS}runs.md`);
+for (let n = 2; existsSync(reportPath); n++) reportPath = join(root, 'eval', 'reports', `${version}-outcome${modeTag}-${RUNS}runs-${n}.md`);
 
 const recallTotal = Object.values(perVuln).reduce((a, b) => a + b, 0);
 const fpTotal = Object.values(perDecoy).reduce((a, b) => a + b, 0);
-writeFileSync(reportPath, `# Outcome-quality bench — rules under test: ${version} (working tree)
+writeFileSync(reportPath, `# Outcome-quality bench — ${BASELINE ? `BASELINE (rules NOT installed) — control for: ${version}` : `rules under test: ${version} (working tree)`}
 
-- Mode: planted-vulnerability recall (security review) + fix smoke · runs: ${validRuns}/${RUNS} valid
+- Mode: planted-vulnerability recall (security review) + fix smoke · runs: ${validRuns}/${RUNS} valid${BASELINE ? ' · **A/B control: no .claude/, no CLAUDE.md — measures the model alone**' : ''}
 - Model: ${MODEL || 'session default'} · avg review time: ${times.length ? (times.reduce((a, b) => a + b, 0) / times.length).toFixed(0) : '-'}s
 - **Recall: ${recallTotal}/${manifest.vulns.length * validRuns} vuln-detections across runs** · **Decoy false positives: ${fpTotal}/${manifest.decoys.length * validRuns}**
 - Grading: transparent file+keyword matching vs expected-findings.json (an LLM-free grader — misses

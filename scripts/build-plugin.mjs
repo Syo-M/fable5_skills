@@ -65,9 +65,10 @@ const rebased = JSON.parse(
 writeFileSync(join(outDir, 'hooks', 'hooks.json'), JSON.stringify(rebased, null, 2) + '\n');
 
 // 3. manifest
+// keys restricted to what `claude plugin validate` accepts — "displayName" was
+// rejected as unrecognized (caught by eval/plugin-smoke.mjs step 1)
 const manifest = {
   name: 'fable-frontend',
-  displayName: 'Fable Frontend Rules',
   version,
   description:
     'Frontend rules for React/Next.js/Vite/Astro + CSS Modules + Vitest/Playwright/Storybook: ' +

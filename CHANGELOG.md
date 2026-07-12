@@ -4,6 +4,55 @@ All notable changes to this rules repository are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/) in reverse-chronological order; this
 repo is versioned so consuming projects can pin a tag and audits can tell which rules governed which commits.
 
+## [3.3.0] - 2026-07-12
+
+**Attribution + framework coverage + distribution runtime** — closes three measured-evaluation
+gaps: what do the rules ADD beyond the model (rules-off A/B), do framework skills fire in their
+own fixtures (Next/Astro), and does the shipped plugin actually load (runtime smoke).
+
+### Added
+- **Rules-off A/B baseline** (`run-outcome.mjs --baseline`): same prompts and grading with NO
+  rules installed. Measured attribution: recall is IDENTICAL (18/18 — the six plants are
+  model-findable alone); the rules' contribution is **precision** (decoy false positives
+  3/6 baseline → 1/6 rules-on; the baseline flags DOMPurify-sanitized HTML every run) and
+  **standard-conformance** (the baseline fixes V1 functionally with hand-rolled `typeof`
+  checks — verified by diff — but not with the zod house standard). Grader label renamed to
+  `standard-conformant fix (zod)` to say what it actually measures. Subtler plants that could
+  differentiate recall are in the eval backlog.
+- **Framework fixtures** (`run-eval.mjs --fixture next|astro`): overlay fixtures (Next 16 App
+  Router / Astro 5 + React islands) + 8 fixture-scoped golden prompts, so framework precedence
+  is tested positively, not only via the Vite-side negative. Measured (3 runs): Next 3/4
+  full-pass (`next-server-action-jp` 2/3 flaky), Astro 2/4 full-pass (`astro-content-jp` 2/3;
+  `astro-routing-precedence-jp` 0/3 at 3 turns, 1/3 at 6 — for the generic "ルーティングを
+  整理したい" phrasing the model tends not to load framework skills at all, which the Vite
+  mirror negative counts as correct; recorded as known-flaky rather than chased with
+  description bloat). Vite over-trigger negative re-measured after the description widening:
+  still 3/3 clean.
+- **Plugin runtime smoke** (`eval/plugin-smoke.mjs`): step 1 `claude plugin validate` on both
+  manifests (deterministic); step 2 headless `--plugin-dir` run in a project with NO rules
+  installed — observed components can only come from the plugin, and namespaced observations
+  (`fable-frontend:security-reviewer`) prove origin. Measured: validate OK, runtime **2/2**.
+
+### Fixed
+- `plugin.json` shipped an unrecognized `displayName` key since v1.8.0 — `claude plugin
+  validate` rejects it (caught by the new smoke's first run). Same for marketplace root
+  `description` (moved to `metadata.description`). Both manifests now validate.
+- Golden prompts starting with `/` (e.g. "/settings ページを新規追加して") are parsed by
+  headless `claude -p` as a SKILL INVOCATION — "Unknown skill: settings", the model never sees
+  the prompt, and the run still counts as valid. Two framework prompts were rephrased and
+  `run-eval.mjs` now fail-fasts on any leading-slash prompt (harness-bug class, found because
+  the 0/3 survived a max-turns-6 horizon retest AND a description widening).
+- run-eval report-name collision suffix dropped the profile/fixture tag.
+
+### Changed
+- `nextjs` / `astro` skill descriptions widened with routing/page-add phrasing (「ページを
+  追加/新規作成して」「ルーティング」) — the pages prompts now fire 3/3; no measured
+  over-trigger cost (Vite negative 3/3).
+- MAINTENANCE release protocol: `--fixture` series when framework skills/fixtures change,
+  `--baseline` re-measure only when fixtures/grading change (it measures the model, not the
+  rules), plugin smoke whenever `plugin/` regenerates. EVALUATION.md gains §2.5 (outcome /
+  adversarial / attribution / distribution-runtime summary).
+
 ## [3.2.0] - 2026-07-12
 
 **Evaluation generation 2** — the prior evals measured "does the right rulebook LOAD?";

@@ -45,9 +45,14 @@ Do this every quarter AND whenever a covered framework ships a major version.
 5. Annotated tag `vX.Y.Z` = the CHANGELOG heading; push main + tag together.
 6. Measured evaluation (`eval/` — see its README) before a MAJOR release; 1-run signal checks
    after big trigger/security changes. Commit the reports:
-   - trigger: `node eval/run-eval.mjs --runs 3`
-   - outcome: `node eval/outcome/run-outcome.mjs --runs 3`
+   - trigger: `node eval/run-eval.mjs --runs 3` (+ `--fixture next` / `--fixture astro` when
+     framework skills or fixtures changed)
+   - outcome: `node eval/outcome/run-outcome.mjs --runs 3`; re-measure the rules-off control
+     (`--baseline --runs 3`) only when the FIXTURES or grading changed — the baseline measures
+     the model, not the rules, so it is stable across rule edits.
    - adversarial: `node eval/adversarial/run-adversarial.mjs --runs 3`
+   - plugin smoke: `node eval/plugin-smoke.mjs` whenever `plugin/` regenerated (step 1
+     validate is deterministic; step 2 is one model run).
    - reproducibility: repeat the trigger series once with a second model
      (`--model haiku` or similar) and record the delta — a single-model high score can
      drop silently on model updates.

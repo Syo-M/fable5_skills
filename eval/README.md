@@ -7,13 +7,15 @@ runs, release-time (not per-commit — model behavior is stochastic and runs cos
 | Bench | Question | Runner |
 |---|---|---|
 | **Trigger** | do prompts activate the intended skill/agent/rule? | `run-eval.mjs` |
-| **Outcome** | does the security review catch PLANTED vulns without flagging benign decoys? does a fix leave the project typechecking? | `outcome/run-outcome.mjs` |
+| **Outcome** | does the security review catch PLANTED vulns without flagging benign decoys? does a fix leave the project typechecking? (+ `--baseline` rules-off A/B control) | `outcome/run-outcome.mjs` |
 | **Adversarial** | injection-in-content, obfuscated sensitive writes, secret pastes, typosquats — defended? benign controls NOT over-blocked? | `adversarial/run-adversarial.mjs` |
+| **Plugin smoke** | does the generated `plugin/` validate AND actually fire via `--plugin-dir`? | `plugin-smoke.mjs` |
 
 ## How it measures (observed, not self-reported)
 
-1. `run-eval.mjs` builds a disposable Vite+React fixture project and installs the rules into it
-   via `install.sh` (so the eval exercises the real install path too).
+1. `run-eval.mjs` builds a disposable fixture project (Vite+React by default; `--fixture next|astro`
+   for framework overlays) and installs the rules into it via `install.sh` (so the eval exercises
+   the real install path too).
 2. It wires `log-event.mjs` into the project's hooks: `PreToolUse`/`PostToolUse` (matcher
    `Skill|Task|Agent`), `SubagentStart`, and `InstructionsLoaded` — deliberately NOTHING else:
    an event name the installed CLI doesn't know silently disables the whole settings file
@@ -42,13 +44,23 @@ runs, release-time (not per-commit — model behavior is stochastic and runs cos
 node eval/run-eval.mjs                 # all prompts, 1 run each (first signal)
 node eval/run-eval.mjs --runs 3        # release-grade rates (do this before a MAJOR release)
 node eval/run-eval.mjs --styling tailwind --runs 3   # evaluate under the tailwind profile
+node eval/run-eval.mjs --fixture next --runs 3       # Next.js App Router fixture series
+node eval/run-eval.mjs --fixture astro --runs 3      # Astro fixture series
 node eval/run-eval.mjs --only dep-vet-jp,preship-jp --keep   # debug specific prompts
+node eval/plugin-smoke.mjs                           # plugin validate + --plugin-dir runtime trigger
 ```
 
 **Styling profiles**: prompts may carry `styling_profile` — they only run when it matches
 `--styling` (default `css-modules`); unmarked prompts run under every profile. Non-default
 profiles apply a fixture overlay from `eval/fixtures-<profile>/` (overwrites files;
 `_delete.txt` lists removals) and install via `install.sh --styling <profile>`.
+
+**Framework fixtures**: prompts may carry `fixture: next|astro` — they only run under
+`--fixture next|astro`, which applies the same overlay mechanism from `eval/fixtures-next/` /
+`eval/fixtures-astro/` (Next 16 App Router / Astro 5 + React islands — matching the versions the
+skills assume). Unmarked prompts belong to the default Vite series. This tests framework
+precedence positively (nextjs/astro fire in their own fixture, with `forbid` cross-checks),
+not only via the Vite-side negative.
 
 **Cost & cadence**: every run is a real model invocation on your account (~26 prompts × runs).
 This is a RELEASE-TIME protocol, not a per-commit CI gate — trigger behavior is stochastic, so a
@@ -62,9 +74,15 @@ IDOR, hardcoded secret) + **2 benign decoys** (sanitized HTML, harmless `authori
 `run-outcome.mjs --runs 3` runs a security review and grades **recall** (vuln mentioned by
 file + class keyword) and **decoy false positives**, then a fix task with a typecheck smoke
 (`npx tsc --noEmit`, type shims included so no node_modules needed). Grading is transparent
-LLM-free matching — it misses paraphrases, so treat recall as a floor. **Attribution caveat**:
-absolute scores mix model capability with ruleset value; a rules-off A/B baseline is the
-planned Phase 2.
+LLM-free matching — it misses paraphrases, so treat recall as a floor.
+
+**Rules-off A/B baseline** (`--baseline`, measured v3.2.0): same prompts/grading with NO rules
+installed. Result: recall is IDENTICAL (18/18 — these six plants are findable by the model
+alone); the rules' measured contribution is **precision** (decoy false positives 3/6 baseline →
+1/6 rules-on; the baseline flags DOMPurify-sanitized HTML every run) and **standard-conformance**
+(the baseline fixes V1 functionally with hand-rolled `typeof` checks but not with zod — the fix
+grader's `must_match_any` measures house-standard conformance, not mere repair). Separating
+recall would need subtler plants — see backlog.
 
 ## Adversarial bench (`adversarial/`)
 
@@ -78,13 +96,21 @@ environment, and tool execution in the fixture project. Prompts and fixtures are
 still, treat `run-eval.mjs` changes as sensitive (the `.claude/**` sign-off flow applies to the
 projects it writes into, and long series can hit usage limits — see run-validity below).
 
+## Plugin smoke (`plugin-smoke.mjs`)
+
+Two steps: (1) `claude plugin validate` on `plugin/` and the marketplace manifest —
+deterministic (first run immediately caught an unrecognized `displayName` manifest key);
+(2) a headless run with `--plugin-dir plugin/` in a fixture project with NO rules installed
+and logger-only hooks — any skill/agent observed can only have come from the plugin, and the
+namespaced names in the report prove origin. Release-time (step 2 is a real model run).
+
 ## Backlog (known gaps, tracked here)
 
-- Next.js / Astro fixture projects so framework precedence is tested positively, not only via the
-  one `forbid` prompt.
-- Plugin runtime smoke test: load `plugin/` via `claude --plugin-dir`, verify skills list, agent
-  launch, bare-name skill injection, and `${CLAUDE_PLUGIN_ROOT}` hook resolution (CI currently
-  gates generation freshness only).
+- Subtler outcome plants (logic-level authz bypass, second-order injection) so RECALL can
+  differentiate rules-on from the baseline — the current six are model-findable without rules.
+- DONE (v3.3.0): Next.js / Astro fixture overlays (`--fixture next|astro`) — framework precedence
+  tested positively with 8 fixture-scoped prompts.
+- DONE (v3.3.0): plugin runtime smoke (`plugin-smoke.mjs`) — see section above.
 - forms.md tripwire scope (measured v3.0.0): `rule:forms` has zero observed firings — path rules
   inject on READ of matching files, so the tripwire covers edits of EXISTING form files, not
   first creation (first creation is covered by load-first + the react-patterns pointer, measured
@@ -93,6 +119,10 @@ projects it writes into, and long series can hit usage limits — see run-validi
 - installer `--uninstall` (requires recording an install manifest at install time).
 - Re-test the 3 flaky prompts (`tests-component-jp` 2/3, `chart-jp` 2/3, `motion-jp` 1/3) at
   `--max-turns 6` — the horizon finding below predicts they rate higher too.
+- Known-flaky (v3.3.0, measured): `astro-routing-precedence-jp` 0/3 at 3 turns, 1/3 at 6 —
+  for the generic「ルーティングを整理したい」phrasing the model tends to load NO framework
+  skill (the Vite mirror negative counts that as correct behavior). Kept as an honest probe;
+  do not chase with description bloat. `next-server-action-jp` 2/3, `astro-content-jp` 2/3.
 - DONE (v2.0.0): over-trigger negatives — 3 prompts, all 3/3 clean; the load-first directive has
   no measured over-loading cost.
 - DONE (v2.0.0): max-turns sensitivity experiment — the 3 former 0/3 "structural" gaps are ALL
