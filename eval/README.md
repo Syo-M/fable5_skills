@@ -112,11 +112,12 @@ namespaced names in the report prove origin. Release-time (step 2 is a real mode
 - DONE (v3.3.0): Next.js / Astro fixture overlays (`--fixture next|astro`) — framework precedence
   tested positively with 8 fixture-scoped prompts.
 - DONE (v3.3.0): plugin runtime smoke (`plugin-smoke.mjs`) — see section above.
-- forms.md tripwire scope (measured v3.0.0): `rule:forms` has zero observed firings — path rules
-  inject on READ of matching files, so the tripwire covers edits of EXISTING form files, not
-  first creation (first creation is covered by load-first + the react-patterns pointer, measured
-  3/3 in reports/v3.0.0-form-tripwire-3runs.md). To measure the rule itself, add a fixture
-  containing a pre-existing ContactForm.tsx and a prompt that edits it.
+- DONE (v3.3.1): forms.md / tests.md tripwire EDIT-path coverage — the fixtures now contain a
+  pre-existing `LoginForm.tsx` and `format.test.ts`, and edit prompts measure the READ-injection
+  path the rules are designed for: `rule:forms` **3/3**, `rule:tests` **3/3**
+  (reports/v3.3.1-tripwire-edit-3runs.md). All 5 path rules now have measured firings —
+  the two "zero-firing" rules were a measurement gap, not dead rules. (Creation-path coverage
+  was measured separately in v3.0.0: load-first + cross-pointers, 3/3.)
 - installer `--uninstall` (requires recording an install manifest at install time).
 - Re-test the 3 flaky prompts (`tests-component-jp` 2/3, `chart-jp` 2/3, `motion-jp` 1/3) at
   `--max-turns 6` — the horizon finding below predicts they rate higher too.

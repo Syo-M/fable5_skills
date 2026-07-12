@@ -4,6 +4,29 @@ All notable changes to this rules repository are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/) in reverse-chronological order; this
 repo is versioned so consuming projects can pin a tag and audits can tell which rules governed which commits.
 
+## [3.3.1] - 2026-07-13
+
+**Measurement-gap closure + meta-layer audit** — outcome of a "prune the meta-layer" pass that
+was done by measuring first: the audit found the apparatus already earns its keep (all 8 scripts
+CI-wired, harness "duplication" is ~15 shared lines each against unique grading logic, hooks are
+the enforcement the adversarial bench proves). The only genuine cruft was archived; the real
+finding was a coverage hole, now closed.
+
+### Added
+- **Edit-path tripwire coverage**: fixtures gain a pre-existing `LoginForm.tsx` and
+  `format.test.ts` + two edit prompts (`form-edit-jp`, `tests-edit-jp`). Measured (3 runs):
+  `rule:forms` **3/3**, `rule:tests` **3/3** — the first observed firings for both. All 5 path
+  rules now have measured activation; the two "zero-firing" rules were a measurement gap
+  (path rules inject on READ, and no fixture contained a matching file to read), not dead rules.
+
+### Changed
+- Pre-v3 eval reports (7 files) moved to `eval/reports/archive/` — audit trail preserved,
+  working set 21 → 14 files. Doc references updated.
+- Meta-layer audit recorded: a shared eval lib was considered and REJECTED (nets ~30 lines
+  against real apparatus risk); `tests.md` deletion was considered and REJECTED (it is a thin
+  control on its design path, now proven firing — governance: a working control is not
+  redundant).
+
 ## [3.3.0] - 2026-07-12
 
 **Attribution + framework coverage + distribution runtime** — closes three measured-evaluation
