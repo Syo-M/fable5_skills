@@ -1,0 +1,8 @@
+[
+  {
+    "name": "initial JS per route (gzipped) — TUNE path per framework: see templates/README.md",
+    "path": ".next/static/chunks/*.js",
+    "limit": "170 kB",
+    "gzip": true
+  }
+]

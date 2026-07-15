@@ -1,8 +1,0 @@
-[
-  {
-    "name": "initial JS per route (gzipped)",
-    "path": "dist/assets/*.js",
-    "limit": "170 kB",
-    "gzip": true
-  }
-]

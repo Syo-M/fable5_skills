@@ -4,6 +4,26 @@ All notable changes to this rules repository are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/) in reverse-chronological order; this
 repo is versioned so consuming projects can pin a tag and audits can tell which rules governed which commits.
 
+## [3.3.2] - 2026-07-13
+
+**Dogfood fix** — first fix sourced from a real end-to-end build (a 6-phase Next.js app built
+*through* the harness; the run's `/retro` surfaced it). Of that run's findings, exactly one was a
+genuine, harness-level defect; the others were already-known/by-design (path rules inject on
+READ, not on new-file Write — documented since v3.0.0, measured v3.3.1) or a base-model slip on a
+CLI where agent-frontmatter hooks are inert (`reviewer-write-guard` is a tool-block only on
+CLIs that honor agent hooks; 2.1.87 falls back to the instruction-level contract). Only the real
+one is fixed here.
+
+### Fixed
+- **`templates/size-limit.json` → `templates/.size-limit.json`**: without the leading dot,
+  `size-limit` never auto-discovers the config — a copied gate would pass while measuring
+  nothing. Also made the template internally consistent: the JSON is file-preset shaped
+  (`path` + `gzip`) but the README told you to install `@size-limit/preset-app` (a heavier,
+  puppeteer-pulling real-browser preset that doesn't use `path` the same way). README now
+  recommends `@size-limit/file` for the shipped shape, documents per-framework `path` values
+  (Next `.next/static/chunks` — the new default — / Vite `dist/assets` / Astro `dist/_astro`),
+  and flags `preset-app` as the heavier opt-in to run past `dependency-vetter`.
+
 ## [3.3.1] - 2026-07-13
 
 **Measurement-gap closure + meta-layer audit** — outcome of a "prune the meta-layer" pass that
